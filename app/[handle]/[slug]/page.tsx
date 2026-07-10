@@ -1,0 +1,82 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useCrown } from "@/lib/data/DataProvider";
+import { DonateForm } from "@/components/DonateForm";
+import { Mono } from "@/components/Mono";
+import { Logo } from "@/components/Logo";
+
+function plural(n: number, one: string, few: string, many: string) {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+export default function CampaignPage({ params }: { params: { handle: string; slug: string } }) {
+  const { getStreamer, getCampaign } = useCrown();
+  const handle = decodeURIComponent(params.handle).replace(/^@/, "");
+  const slug = decodeURIComponent(params.slug);
+  const streamer = getStreamer(handle);
+  const campaign = getCampaign(handle, slug);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!streamer || !campaign) {
+    return (
+      <main className="page">
+        <div className="center-note">
+          <h1>Кампания не найдена</h1>
+          <p>Проверь ссылку.</p>
+          <Link className="btn" href="/">
+            На главную
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const goal = campaign.goal ?? 0;
+  const pct = goal ? Math.min(100, (campaign.raised / goal) * 100) : 0;
+  const left = Math.max(0, goal - campaign.raised);
+
+  return (
+    <main className="page">
+      <div className="wrap">
+        <Link className="trust" href={`/@${streamer.handle}`}>
+          <Mono name={streamer.name} size={26} />
+          <span>
+            <b>{streamer.name}</b> · @{streamer.handle}
+          </span>
+        </Link>
+
+        <h1>{campaign.title}</h1>
+        <p className="lead">{campaign.lead}</p>
+
+        {goal ? (
+          <div className="card">
+            <div className="goal-sum">
+              <span className="goal-now num">{campaign.raised} $</span>
+              <span className="goal-of num">из {goal} $</span>
+            </div>
+            <div className="bar">
+              <div className="bar-fill" style={{ width: mounted ? `${pct}%` : "0%" }} />
+            </div>
+            <div className="goal-meta num">
+              {campaign.count} {plural(campaign.count, "донат", "доната", "донатов")} · осталось {left} $
+            </div>
+          </div>
+        ) : null}
+
+        <DonateForm handle={streamer.handle} defaultAmount={10} streamerName={`${streamer.name} на кошелёк`} />
+
+        <div className="powered">
+          Работает на <Link href="/">Crown</Link>
+        </div>
+      </div>
+    </main>
+  );
+}
