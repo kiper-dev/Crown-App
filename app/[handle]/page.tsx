@@ -19,10 +19,10 @@ export default function StreamerPage({ params }: { params: { handle: string } })
       <main className="page">
         <AppBar />
         <div className="center-note">
-          <h1>Такого стримера нет</h1>
-          <p>Проверь ссылку — возможно, в нике опечатка.</p>
+          <h1>No such streamer</h1>
+          <p>Check the link — there might be a typo in the handle.</p>
           <Link className="btn" href="/">
-            На главную
+            Back to home
           </Link>
         </div>
       </main>
@@ -51,21 +51,21 @@ export default function StreamerPage({ params }: { params: { handle: string } })
 
       <div className="cols">
         <div className="stack">
-          <DonateForm handle={streamer.handle} defaultAmount={5} streamerName={`${streamer.name} на кошелёк`} />
+          <DonateForm handle={streamer.handle} defaultAmount={5} streamerName={`${streamer.name}'s wallet`} />
 
           <div className="card rep-card">
-            <div className="rep-title">Твоя репутация у {streamer.name}</div>
+            <div className="rep-title">Your reputation with {streamer.name}</div>
             <div className="rep-num num">{reputation}</div>
             <div className="rep-level">
-              {level >= 1 ? `Уровень ${level}` : "Пока без уровня"}
-              {next ? ` · Уровень ${level + 1} — от ${next}` : ""}
+              {level >= 1 ? `Level ${level}` : "No level yet"}
+              {next ? ` · Level ${level + 1} — from ${next}` : ""}
             </div>
-            <span className={`rep-gain num${lastGain ? " show" : ""}`}>{lastGain ? `+${lastGain} только что` : ""}</span>
-            <div className="rep-hint">+1 к репутации за каждый доллар доната</div>
+            <span className={`rep-gain num${lastGain ? " show" : ""}`}>{lastGain ? `+${lastGain} just now` : ""}</span>
+            <div className="rep-hint">+1 reputation for every dollar donated</div>
           </div>
         </div>
 
-        <Feed title="Донаты" />
+        <Feed title="Donations" />
       </div>
     </main>
   );

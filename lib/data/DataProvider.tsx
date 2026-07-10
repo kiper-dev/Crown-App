@@ -12,7 +12,7 @@ const USDC_DECIMALS = 6;
 
 export class NotConfiguredError extends Error {
   constructor() {
-    super("Контракты ещё не задеплоены в тестнет. Попроси у бэкендера адрес сплиттера и впиши его в lib/chain/config.ts.");
+    super("Contracts aren't deployed to testnet yet. Ask the backend dev for the splitter address and put it in lib/chain/config.ts.");
     this.name = "NotConfiguredError";
   }
 }
@@ -26,7 +26,7 @@ interface CrownCtx {
   feed: Donation[];
   reputation: number;
   lastGain: number | null;
-  // Отправить донат. В mock — симуляция со «Отправляем…». В chain — реальная транзакция.
+  // Send a donation. In mock — a simulation with "Sending…". In chain — a real transaction.
   donate: (input: DonateInput, walletAddress?: `0x${string}`) => Promise<{ txHash?: string }>;
 }
 
@@ -36,7 +36,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<DataMode>("mock");
   const [ready, setReady] = useState(false);
 
-  // Мок-состояние (живёт в памяти сессии; при F2 это заменит crown-app/api).
+  // Mock state (lives in session memory; crown-app/api will replace this at F2).
   const [feed, setFeed] = useState<Donation[]>(MOCK_FEED);
   const [reputation, setReputation] = useState<number>(MOCK_REPUTATION.kira ?? 0);
   const [campaigns, setCampaigns] = useState<Record<string, Campaign>>(MOCK_CAMPAIGNS);
@@ -69,10 +69,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setFeed((prev) => [
       {
         id: `d${Date.now()}`,
-        from: (input.name || "Ты").trim() || "Ты",
+        from: (input.name || "You").trim() || "You",
         amount: input.amount,
         message: input.message?.trim() || undefined,
-        time: "только что",
+        time: "just now",
         fresh: true,
       },
       ...prev,
@@ -98,9 +98,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
       // chain
       if (!isSplitterConfigured()) throw new NotConfiguredError();
-      if (!walletAddress) throw new Error("Сначала подключи кошелёк.");
+      if (!walletAddress) throw new Error("Connect your wallet first.");
       const streamer = getStreamer(input.handle);
-      if (!streamer) throw new Error("Стример не найден.");
+      if (!streamer) throw new Error("Streamer not found.");
 
       const gross = parseUnits(String(input.amount), USDC_DECIMALS);
 

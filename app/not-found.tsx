@@ -8,10 +8,10 @@ export default function NotFound() {
         <Logo />
       </header>
       <div className="center-note">
-        <h1>Страница не найдена</h1>
-        <p>Проверь ссылку — возможно, в ней опечатка.</p>
+        <h1>Page not found</h1>
+        <p>Check the link — it might have a typo.</p>
         <Link className="btn" href="/">
-          На главную
+          Back to home
         </Link>
       </div>
     </main>

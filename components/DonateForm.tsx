@@ -15,16 +15,16 @@ function short(addr?: string) {
 function friendlyError(e: unknown): { text: string; soft: boolean } {
   if (e instanceof NotConfiguredError) return { text: e.message, soft: false };
   const msg = e instanceof Error ? e.message : String(e);
-  if (/rejected|denied|4001|отмен/i.test(msg)) return { text: "", soft: true }; // отмена — не ошибка
-  if (/insufficient/i.test(msg)) return { text: "Не хватает USDC на кошельке.", soft: false };
-  if (/подключи кошелёк/i.test(msg)) return { text: "Сначала подключи кошелёк.", soft: false };
-  return { text: "Что-то пошло не так. Попробуй ещё раз.", soft: false };
+  if (/rejected|denied|4001|cancel/i.test(msg)) return { text: "", soft: true }; // cancel — not an error
+  if (/insufficient/i.test(msg)) return { text: "Not enough USDC in the wallet.", soft: false };
+  if (/connect.*wallet/i.test(msg)) return { text: "Connect your wallet first.", soft: false };
+  return { text: "Something went wrong. Try again.", soft: false };
 }
 
 export function DonateForm({
   handle,
   defaultAmount = 5,
-  streamerName = "стримеру",
+  streamerName = "the streamer's wallet",
 }: {
   handle: string;
   defaultAmount?: number;
@@ -76,7 +76,7 @@ export function DonateForm({
 
     if (chainNeedsConnect) {
       if (!wallet.hasWallet) {
-        setError("Не нашли кошелёк в браузере. Установи MetaMask или Rabby.");
+        setError("No wallet found in the browser. Install MetaMask or Rabby.");
         return;
       }
       wallet.connect();
@@ -103,14 +103,14 @@ export function DonateForm({
   }
 
   let label: React.ReactNode;
-  if (busy) label = "Отправляем…";
-  else if (status === "done") label = "Готово";
-  else if (chainNeedsConnect) label = wallet.connecting ? "Открываем кошелёк…" : "Подключить кошелёк";
-  else label = (<>Задонатить <span className="num">{amount} $</span></>);
+  if (busy) label = "Sending…";
+  else if (status === "done") label = "Done";
+  else if (chainNeedsConnect) label = wallet.connecting ? "Opening wallet…" : "Connect wallet";
+  else label = (<>Donate <span className="num">{amount} $</span></>);
 
   return (
     <div className="card form-card">
-      <div className="chips" role="group" aria-label="Сумма доната">
+      <div className="chips" role="group" aria-label="Donation amount">
         {PRESETS.map((p) => (
           <button
             key={p}
@@ -129,7 +129,7 @@ export function DonateForm({
               min={1}
               autoFocus
               placeholder="$"
-              aria-label="Своя сумма"
+              aria-label="Custom amount"
               value={customValue}
               disabled={busy}
               onChange={(e) => {
@@ -142,18 +142,18 @@ export function DonateForm({
           </span>
         ) : (
           <button type="button" className="chip" disabled={busy} onClick={openCustom}>
-            Своя
+            Custom
           </button>
         )}
       </div>
 
       <div className="field">
-        <label htmlFor="don-name">Твоё имя</label>
-        <input id="don-name" type="text" placeholder="необязательно" value={name} disabled={busy} onChange={(e) => setName(e.target.value)} />
+        <label htmlFor="don-name">Your name</label>
+        <input id="don-name" type="text" placeholder="optional" value={name} disabled={busy} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="field">
-        <label htmlFor="don-msg">Сообщение</label>
-        <textarea id="don-msg" rows={2} placeholder="необязательно" value={message} disabled={busy} onChange={(e) => setMessage(e.target.value)} />
+        <label htmlFor="don-msg">Message</label>
+        <textarea id="don-msg" rows={2} placeholder="optional" value={message} disabled={busy} onChange={(e) => setMessage(e.target.value)} />
       </div>
 
       <button type="button" className="btn" disabled={busy} onClick={onSubmit}>
@@ -166,7 +166,7 @@ export function DonateForm({
         </div>
       ) : (
         <div className="footnote">
-          Доллары (USDC) · придут {streamerName} напрямую на кошелёк
+          Dollars (USDC) · arrive at {streamerName} directly
           {mode === "chain" && wallet.connected ? ` · ${short(wallet.address)}` : ""}
         </div>
       )}

@@ -2,8 +2,8 @@ import { http, createConfig } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { ACTIVE_CHAIN } from "./config";
 
-// Конфиг кошелька для режима chain. injected = MetaMask / Rabby / любой
-// браузерный кошелёк. Без WalletConnect — не нужен projectId, работает сразу.
+// Wallet config for chain mode. injected = MetaMask / Rabby / any
+// browser wallet. No WalletConnect — no projectId needed, works out of the box.
 export const wagmiConfig = createConfig({
   chains: [ACTIVE_CHAIN],
   connectors: [injected()],

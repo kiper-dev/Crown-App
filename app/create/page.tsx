@@ -10,8 +10,8 @@ import { SocialIcon, SOCIAL_LABEL } from "@/components/icons";
 import { toHandle } from "@/lib/translit";
 import type { Social } from "@/lib/data/types";
 
-const STEPS = ["Профиль", "Соцсети", "Кошелёк", "Уровни"];
-const SOCIAL_KINDS: Social["kind"][] = ["youtube", "twitch", "kick", "telegram", "x"];
+const STEPS = ["Profile", "Socials", "Wallet", "Levels"];
+const SOCIAL_KINDS: Social["kind"][] = ["youtube", "twitch", "kick", "x", "tiktok", "instagram", "telegram", "onlyfans"];
 const DEMO_ADDRESS = "0xDEmo0000000000000000000000000000000000A1" as const;
 
 export default function CreatePage() {
@@ -63,8 +63,8 @@ export default function CreatePage() {
 
       <div className="wizard">
         <div className="head">
-          <h1>Создать страницу</h1>
-          <p>Бесплатно — одна страница на кошелёк.</p>
+          <h1>Create your page</h1>
+          <p>Free — one page per wallet.</p>
         </div>
 
         <div className="stepper">
@@ -86,11 +86,11 @@ export default function CreatePage() {
         {step === 1 && (
           <div className="step-body">
             <div className="field">
-              <label htmlFor="w-name">Имя</label>
+              <label htmlFor="w-name">Name</label>
               <input
                 id="w-name"
                 type="text"
-                placeholder="Как тебя зовут на стриме"
+                placeholder="What people call you on stream"
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
@@ -99,11 +99,11 @@ export default function CreatePage() {
               />
             </div>
             <div className="field">
-              <label htmlFor="w-handle">Адрес страницы</label>
+              <label htmlFor="w-handle">Page address</label>
               <input
                 id="w-handle"
                 type="text"
-                placeholder="ник"
+                placeholder="handle"
                 value={handle}
                 onChange={(e) => {
                   setHandleEdited(true);
@@ -112,18 +112,18 @@ export default function CreatePage() {
               />
             </div>
             <div className="link-preview">
-              Твоя ссылка: <b>crown.tv/@{cleanHandle || "ник"}</b>
+              Your link: <b>crown.tv/@{cleanHandle || "handle"}</b>
             </div>
             <div className="field">
-              <label htmlFor="w-bio">О себе</label>
-              <textarea id="w-bio" rows={2} placeholder="необязательно" value={bio} onChange={(e) => setBio(e.target.value)} />
+              <label htmlFor="w-bio">About</label>
+              <textarea id="w-bio" rows={2} placeholder="optional" value={bio} onChange={(e) => setBio(e.target.value)} />
             </div>
           </div>
         )}
 
         {step === 2 && (
           <div className="step-body">
-            <p className="hint">Где тебя найти. Можно пропустить.</p>
+            <p className="hint">Where to find you. Can be skipped.</p>
             {socials.map((s, i) => (
               <div className="social-row" key={i}>
                 <span className="ic">
@@ -151,14 +151,14 @@ export default function CreatePage() {
                     />
                   </div>
                 </div>
-                <button className="rm" type="button" aria-label="Удалить" onClick={() => setSocials((p) => p.filter((_, j) => j !== i))}>
+                <button className="rm" type="button" aria-label="Remove" onClick={() => setSocials((p) => p.filter((_, j) => j !== i))}>
                   ✕
                 </button>
               </div>
             ))}
-            {socials.length < 5 && (
+            {socials.length < SOCIAL_KINDS.length && (
               <button className="btn-outline" type="button" style={{ alignSelf: "flex-start" }} onClick={() => setSocials((p) => [...p, { kind: "twitch", url: "" }])}>
-                + Добавить ссылку
+                + Add link
               </button>
             )}
           </div>
@@ -166,26 +166,26 @@ export default function CreatePage() {
 
         {step === 3 && (
           <div className="step-body">
-            <p className="hint">Куда приходят донаты. Деньги идут сразу и только сюда.</p>
+            <p className="hint">Where donations arrive. Money goes straight there and only there.</p>
             <div className="wallet-choice">
               <button type="button" className="wallet-opt" onClick={() => setWalletMode("connected")} style={{ borderColor: walletMode === "connected" ? "var(--accent)" : undefined }}>
-                <div className="t">Использовать {mode === "chain" ? "подключённый кошелёк" : "демо-кошелёк"}</div>
+                <div className="t">Use {mode === "chain" ? "connected wallet" : "demo wallet"}</div>
                 <div className="s">
                   {mode === "chain"
                     ? wallet.connected
-                      ? `Подключён: ${wallet.address}`
-                      : "Кошелёк не подключён"
-                    : `Демо-адрес: ${DEMO_ADDRESS}`}
+                      ? `Connected: ${wallet.address}`
+                      : "Wallet not connected"
+                    : `Demo address: ${DEMO_ADDRESS}`}
                 </div>
               </button>
               {mode === "chain" && walletMode === "connected" && !wallet.connected && (
                 <button className="btn" type="button" style={{ alignSelf: "flex-start" }} onClick={() => wallet.connect()}>
-                  {wallet.connecting ? "Открываем кошелёк…" : "Подключить кошелёк"}
+                  {wallet.connecting ? "Opening wallet…" : "Connect wallet"}
                 </button>
               )}
               <button type="button" className="wallet-opt" onClick={() => setWalletMode("manual")} style={{ borderColor: walletMode === "manual" ? "var(--accent)" : undefined }}>
-                <div className="t">Ввести другой адрес</div>
-                <div className="s">Проверь дважды — изменить донаты задним числом нельзя.</div>
+                <div className="t">Enter a different address</div>
+                <div className="s">Double-check it — donations can't be redirected after the fact.</div>
               </button>
               {walletMode === "manual" && (
                 <div className="field">
@@ -198,10 +198,10 @@ export default function CreatePage() {
 
         {step === 4 && (
           <div className="step-body">
-            <p className="hint">Уровни для твоих зрителей — порог в долларах. Можно оставить как есть.</p>
+            <p className="hint">Levels for your viewers — a threshold in dollars. You can leave the defaults.</p>
             {levels.map((l, i) => (
               <div className="field" key={i}>
-                <label>Уровень {i + 1} — от, $</label>
+                <label>Level {i + 1} — from, $</label>
                 <input type="number" min={1} value={l} onChange={(e) => setLevels((p) => p.map((x, j) => (j === i ? e.target.value : x)) as [string, string, string])} />
               </div>
             ))}
@@ -210,21 +210,21 @@ export default function CreatePage() {
 
         <div className="wizard-nav">
           <button className="back" type="button" onClick={() => (step === 1 ? router.push("/") : setStep(step - 1))}>
-            ← Назад
+            ← Back
           </button>
           <div style={{ display: "flex", alignItems: "center" }}>
             {(step === 2 || step === 4) && (
               <button className="skip" type="button" onClick={() => (step === 4 ? finish() : setStep(step + 1))}>
-                Пропустить
+                Skip
               </button>
             )}
             {step < 4 ? (
               <button className="btn" type="button" disabled={step === 1 && !canNext1} onClick={() => setStep(step + 1)}>
-                Дальше
+                Next
               </button>
             ) : (
               <button className="btn" type="button" disabled={!canFinish} onClick={finish}>
-                Готово
+                Done
               </button>
             )}
           </div>

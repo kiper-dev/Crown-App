@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ModeSwitch } from "@/components/ModeSwitch";
 
 export const metadata: Metadata = {
   title: "Crown",
-  description: "Донаты сразу на твой кошелёк",
+  description: "Donations straight to your wallet",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="en">
       <body>
-        <Providers>
-          {children}
-          <ModeSwitch />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

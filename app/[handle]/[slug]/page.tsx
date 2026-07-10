@@ -7,12 +7,8 @@ import { DonateForm } from "@/components/DonateForm";
 import { Mono } from "@/components/Mono";
 import { Logo } from "@/components/Logo";
 
-function plural(n: number, one: string, few: string, many: string) {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
+function plural(n: number, one: string, many: string) {
+  return n === 1 ? one : many;
 }
 
 export default function CampaignPage({ params }: { params: { handle: string; slug: string } }) {
@@ -29,10 +25,10 @@ export default function CampaignPage({ params }: { params: { handle: string; slu
     return (
       <main className="page">
         <div className="center-note">
-          <h1>Кампания не найдена</h1>
-          <p>Проверь ссылку.</p>
+          <h1>Campaign not found</h1>
+          <p>Check the link.</p>
           <Link className="btn" href="/">
-            На главную
+            Back to home
           </Link>
         </div>
       </main>
@@ -60,21 +56,21 @@ export default function CampaignPage({ params }: { params: { handle: string; slu
           <div className="card">
             <div className="goal-sum">
               <span className="goal-now num">{campaign.raised} $</span>
-              <span className="goal-of num">из {goal} $</span>
+              <span className="goal-of num">of {goal} $</span>
             </div>
             <div className="bar">
               <div className="bar-fill" style={{ width: mounted ? `${pct}%` : "0%" }} />
             </div>
             <div className="goal-meta num">
-              {campaign.count} {plural(campaign.count, "донат", "доната", "донатов")} · осталось {left} $
+              {campaign.count} {plural(campaign.count, "donation", "donations")} · {left} $ left
             </div>
           </div>
         ) : null}
 
-        <DonateForm handle={streamer.handle} defaultAmount={10} streamerName={`${streamer.name} на кошелёк`} />
+        <DonateForm handle={streamer.handle} defaultAmount={10} streamerName={`${streamer.name}'s wallet`} />
 
         <div className="powered">
-          Работает на <Link href="/">Crown</Link>
+          Powered by <Link href="/">Crown</Link>
         </div>
       </div>
     </main>

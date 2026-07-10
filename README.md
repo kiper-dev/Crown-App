@@ -1,5 +1,5 @@
 # Crown App
 
-Фронт Crown: сайт, кабинет, кампании, оверлеи OBS. Вне доверенного контура — денег и ключей нет.
+Crown front end: the site, the cabinet, campaigns, OBS overlays. Outside the trusted perimeter — no money, no keys.
 
-Документация: [docs/front.md](docs/front.md). Читается вместе с доками ядра (Crown-Core) и фабрики (Crown-Factory).
+Documentation: [docs/front.md](docs/front.md). Read alongside the core (Crown-Core) and factory (Crown-Factory) docs.

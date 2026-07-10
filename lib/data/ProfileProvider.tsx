@@ -15,7 +15,7 @@ interface ProfileCtx {
 
 const Ctx = createContext<ProfileCtx | null>(null);
 
-// Профиль стримера = «регистрация». Пока нет crown-app/api, живёт в localStorage.
+// A streamer profile = "registration". Until crown-app/api exists, it lives in localStorage.
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [ready, setReady] = useState(false);

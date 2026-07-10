@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCrown } from "@/lib/data/DataProvider";
 import { Mono } from "./Mono";
 
-export function Feed({ title = "Донаты", limit, moreHref }: { title?: string; limit?: number; moreHref?: string }) {
+export function Feed({ title = "Donations", limit, moreHref }: { title?: string; limit?: number; moreHref?: string }) {
   const { feed } = useCrown();
   const rows = limit ? feed.slice(0, limit) : feed;
 
@@ -14,7 +14,7 @@ export function Feed({ title = "Донаты", limit, moreHref }: { title?: stri
         <h2>{title}</h2>
         {moreHref ? (
           <Link className="more" href={moreHref}>
-            Все донаты →
+            All donations →
           </Link>
         ) : null}
       </div>

@@ -1,108 +1,105 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Logo } from "@/components/Logo";
 import { TopRight } from "@/components/TopRight";
-import { SearchIcon, ChevronDown } from "@/components/icons";
+import { CrownMark } from "@/components/icons";
+import { GamesList } from "@/components/GamesList";
+import styles from "./page.module.css";
 
 export default function HomePage() {
-  const router = useRouter();
-  const [q, setQ] = useState("");
-
-  function go(e: React.FormEvent) {
-    e.preventDefault();
-    const handle = q.trim().replace(/^@/, "");
-    if (handle) router.push(`/@${handle}`);
-  }
-
   return (
-    <main className="page">
-      <section className="vp">
-        <div className="vp-bar">
-          <Logo />
+    <main className={styles.wrap}>
+      <header className={`${styles.topnav} ${styles.navIn}`}>
+        <div className={styles.bar}>
+          <div className={styles.left}>
+            <Link className={styles.brand} href="/">
+              <span className={styles.badge}>
+                <CrownMark width={16} height={16} />
+              </span>
+              CROWN
+            </Link>
+            <nav className={styles.nav}>
+              <Link className={styles.navLink} href="/games">
+                Mini-games
+              </Link>
+              <Link className={styles.navLink} href="/ops">
+                Admin Panel
+              </Link>
+            </nav>
+          </div>
           <TopRight />
         </div>
-
-        <form className="search" onSubmit={go}>
-          <SearchIcon />
-          <input
-            type="text"
-            placeholder="@ник стримера"
-            aria-label="Поиск стримера"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </form>
-        <div className="search-hint">
-          например, <b>@kira</b>
-        </div>
-
-        <a className="down" href="#l-hero" aria-label="Вниз, к разделу для стримеров">
-          Для стримеров
-          <ChevronDown />
-        </a>
-      </section>
+      </header>
 
       <div className="landing">
-        <div className="hero-l" id="l-hero">
-          <h1>Донаты сразу на твой кошелёк</h1>
-          <p className="lead">
-            Crown — страница для донатов в долларах. Зритель отправляет — деньги приходят тебе напрямую.
+        <div className={`hero-l ${styles.heroCenter}`} id="l-hero">
+          <h1 className={`${styles.reveal} ${styles.d1}`}>Donations straight to your wallet</h1>
+          <p className={`lead ${styles.reveal} ${styles.d2}`}>
+            Crown is a donation page in dollars. A viewer sends — the money reaches you directly.
           </p>
-          <div className="cta-row">
+          <div className={`cta-row ${styles.reveal} ${styles.d3}`}>
             <Link className="btn" href="/create">
-              Создать страницу
+              Create your page
             </Link>
             <Link className="link-quiet" href="/@kira">
-              Посмотреть пример страницы
+              See an example page
             </Link>
           </div>
         </div>
 
-        <div className="pillars">
+        <div className={`pillars ${styles.reveal} ${styles.d4}`}>
           <div className="card pillar">
             <h3>
-              <span className="num">3%</span> и всё
+              <span className="num">3%</span> and that's it
             </h3>
-            <p>Одна комиссия. Ни подписок, ни скрытых процентов. 97% каждого доната — твои.</p>
+            <p>One fee. No subscriptions, no hidden cuts. 97% of every donation is yours.</p>
           </div>
           <div className="card pillar">
-            <h3>Выплат не существует</h3>
-            <p>Донат идёт с кошелька зрителя сразу на твой. Нам нечего задерживать — денег у нас нет.</p>
+            <h3>Payouts don't exist</h3>
+            <p>A donation goes from the viewer's wallet straight to yours. We have nothing to hold — we never touch the money.</p>
           </div>
           <div className="card pillar">
-            <h3>Не верь нам на слово</h3>
-            <p>Код открыт, движение каждого доната можно проверить самому.</p>
+            <h3>Trust, but verify</h3>
+            <p>The code is open — you can verify every donation's path yourself.</p>
             <a href="https://github.com/69walterwhite420-star/Crown-Core" target="_blank" rel="noreferrer">
-              Открыть на GitHub →
+              Open on GitHub →
             </a>
           </div>
         </div>
 
-        <div className="steps">
+        <div className={`steps ${styles.reveal} ${styles.d5}`}>
           <div className="step">
             <div className="n num">1</div>
-            <h3>Создай страницу</h3>
-            <p>Имя и кошелёк. Меньше минуты.</p>
+            <h3>Create your page</h3>
+            <p>Name and wallet. Under a minute.</p>
           </div>
           <div className="step">
             <div className="n num">2</div>
-            <h3>Кинь ссылку зрителям</h3>
-            <p>crown.tv/@ты — в описание стрима, в чат, куда угодно.</p>
+            <h3>Drop the link to viewers</h3>
+            <p>crown.tv/@you — in your stream description, chat, anywhere.</p>
           </div>
           <div className="step">
             <div className="n num">3</div>
-            <h3>Донаты приходят напрямую</h3>
-            <p>А каждый донат растит репутацию зрителя у тебя.</p>
+            <h3>Donations arrive directly</h3>
+            <p>And every donation grows the viewer's reputation with you.</p>
           </div>
         </div>
 
-        <div className="final">
-          <p>Понадобится только кошелёк.</p>
+        <section className={`${styles.gamesTeaser} ${styles.reveal} ${styles.d6}`}>
+          <div className={styles.gamesHead}>
+            <div>
+              <h2>Mini-games</h2>
+              <p>Games built on top of your donations.</p>
+            </div>
+            <Link className={styles.seeAll} href="/games">
+              See all mini-games →
+            </Link>
+          </div>
+          <GamesList limit={3} />
+        </section>
+
+        <div className={`final ${styles.reveal} ${styles.d6}`}>
+          <p>All you need is a wallet.</p>
           <Link className="btn" href="/create">
-            Создать страницу
+            Create your page
           </Link>
         </div>
       </div>
@@ -112,8 +109,8 @@ export default function HomePage() {
         <a href="https://github.com/69walterwhite420-star/Crown-Core" target="_blank" rel="noreferrer">
           GitHub
         </a>
-        <Link href="/">Условия</Link>
-        <Link href="/">Конфиденциальность</Link>
+        <Link href="/">Terms</Link>
+        <Link href="/">Privacy</Link>
       </div>
     </main>
   );

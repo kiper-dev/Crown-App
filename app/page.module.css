@@ -1,0 +1,198 @@
+/* Home showcase. Isolated in a CSS module to avoid conflicting with globals.css.
+   Only design-charter tokens (var(--*)): one purple accent, no gold. */
+
+.wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- entrance animation ---- */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes revealDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.navIn {
+  animation: revealDown 0.5s var(--ease) both;
+}
+.reveal {
+  animation: revealUp 0.7s var(--ease) both;
+}
+.d1 {
+  animation-delay: 0.05s;
+}
+.d2 {
+  animation-delay: 0.13s;
+}
+.d3 {
+  animation-delay: 0.21s;
+}
+.d4 {
+  animation-delay: 0.29s;
+}
+.d5 {
+  animation-delay: 0.37s;
+}
+.d6 {
+  animation-delay: 0.45s;
+}
+
+/* ---- top navigation (header as in the mockup) ---- */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--line);
+  background: rgba(20, 19, 24, 0.82);
+  backdrop-filter: blur(12px);
+}
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 20px;
+}
+.left {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  min-width: 0;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text-1);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  clip-path: polygon(50% 2%, 95% 26%, 95% 74%, 50% 98%, 5% 74%, 5% 26%);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.navLink {
+  padding: 8px 12px;
+  border-radius: var(--r-1);
+  color: var(--text-2);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+.navLink:hover {
+  color: var(--text-1);
+  background: var(--bg-1);
+}
+.navLink:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-neutral);
+}
+/* below 680px keep every link reachable — wrap onto its own centered row
+   instead of hiding navigation entirely */
+@media (max-width: 680px) {
+  .left {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .nav {
+    width: 100%;
+    justify-content: center;
+    gap: 4px;
+  }
+}
+
+/* ---- hero: centered heading block with a soft accent glow behind it ---- */
+.heroCenter {
+  position: relative;
+}
+:global(.hero-l).heroCenter {
+  margin: 0 auto;
+  max-width: 760px;
+  align-items: center;
+  text-align: center;
+}
+:global(.hero-l).heroCenter :global(.lead) {
+  max-width: 54ch;
+}
+:global(.hero-l).heroCenter :global(.cta-row) {
+  justify-content: center;
+}
+.heroCenter::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -120px;
+  left: 50%;
+  width: 640px;
+  height: 340px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, var(--accent-soft) 0%, transparent 70%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+/* ---- mini-games teaser (inside .landing, which centers at 1040px) ---- */
+.gamesTeaser {
+  margin-bottom: 96px;
+}
+.gamesHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.gamesHead h2 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.gamesHead p {
+  font-size: 15px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.seeAll {
+  flex: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease);
+}
+.seeAll:hover {
+  color: var(--accent-hover);
+}

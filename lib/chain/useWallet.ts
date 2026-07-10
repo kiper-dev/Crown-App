@@ -3,8 +3,8 @@
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useCrown } from "@/lib/data/DataProvider";
 
-// Единая ручка кошелька для обоих режимов.
-// mock — «подключён» без реального кошелька; chain — настоящий injected-кошелёк.
+// One wallet handle for both modes.
+// mock — "connected" without a real wallet; chain — a real injected wallet.
 export function useWallet() {
   const { mode } = useCrown();
   const { address, isConnected } = useAccount();

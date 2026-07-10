@@ -1,20 +1,20 @@
 import { sepolia } from "viem/chains";
 
-// Сеть, в которой сейчас работает режим chain (тестнет).
+// The network the chain mode currently runs on (testnet).
 export const ACTIVE_CHAIN = sepolia;
 
 // ──────────────────────────────────────────────────────────────────
-// Адреса контрактов. Их даёт бэкендер после деплоя в тестнет.
-// Пока сплиттер не задеплоен — оставить нулевой адрес: фронт это увидит
-// и покажет честное сообщение вместо попытки отправить транзакцию в пустоту.
-// (См. Crown-App/docs/front.md — план сборки F3: «адреса тестнета от бэка».)
+// Contract addresses. Supplied by the backend dev after the testnet deploy.
+// While the splitter isn't deployed — leave the zero address: the front end
+// detects this and shows an honest message instead of firing a transaction into the void.
+// (See Crown-App/docs/front.md — build plan F3: "testnet addresses from the backend".)
 // ──────────────────────────────────────────────────────────────────
 export const ZERO = "0x0000000000000000000000000000000000000000" as const;
 
 export const ADDRESSES = {
-  // Splitter 97/3 из Crown-Core.
+  // Splitter 97/3 from Crown-Core.
   splitter: ZERO as `0x${string}`,
-  // USDC в тестнете (Sepolia). Известный тестовый USDC от Circle:
+  // USDC on testnet (Sepolia). Circle's known test USDC:
   usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as `0x${string}`,
 };
 
@@ -22,7 +22,7 @@ export function isSplitterConfigured() {
   return ADDRESSES.splitter !== ZERO;
 }
 
-// ABI ровно тех функций, которые зовёт фронт (из contracts/evm/src/Splitter.sol).
+// ABI of exactly the functions the front end calls (from contracts/evm/src/Splitter.sol).
 export const SPLITTER_ABI = [
   {
     type: "function",

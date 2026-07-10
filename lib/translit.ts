@@ -5,7 +5,7 @@ const MAP: Record<string, string> = {
   ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
 };
 
-// Кириллическое имя → латинский slug для адреса страницы (@handle).
+// Cyrillic name → Latin slug for the page address (@handle).
 export function toHandle(input: string): string {
   return input
     .toLowerCase()

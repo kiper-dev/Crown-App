@@ -1,241 +1,245 @@
 # Crown Front
 
-**v0.1 · Сайт и только сайт · Денег и ключей нет**
+**v0.1 · The site and only the site · No money, no keys**
 
-Фронт — вне доверенного контура (`crown-core/docs/project-map.md` §3): он может врать, поэтому ему нельзя доверять ничего. Все деньги двигаются транзакциями из кошелька пользователя; вся репутация читается из канистры. Фронт — стекло между человеком и контрактами.
+The front end is outside the trusted perimeter (`crown-core/docs/project-map.md` §3): it can lie, so it cannot be trusted with anything. All money moves via transactions from the user's wallet; all reputation is read from the canister. The front end is glass between the person and the contracts.
 
-Части: [I. Спецификация](#i-спецификация) · [II. Дизайн](#ii-дизайн) · [III. План сборки](#iii-план-сборки) · [IV. Post-front](#iv-post-front)
+Parts: [I. Specification](#i-specification) · [II. Design](#ii-design) · [III. Build Plan](#iii-build-plan) · [IV. Post-front](#iv-post-front)
 
 ---
 
-# I. Спецификация
+# I. Specification
 
-## 1. Поверхности
+## 1. Surfaces
 
-Восемь маршрутов. У каждого одна задача. Девятой поверхности нет — новая страница появляется только через часть IV.
+Nine routes. Each has one job. A new surface only appears via an explicit owner decision (like the `/games` catalog) or Part IV.
 
-| Маршрут | Задача | Регистр |
+| Route | Job | Register |
 |---|---|---|
-| `/` | первый экран — голая строка поиска (как 1inch); скролл вниз — лендинг для стримеров | строгий |
-| `/@handle` | страница стримера: геро, форма доната, лента, репутация зрителя | смешанный |
-| `/@handle/<слаг>` | кампания: сбор / игра / просьба донатов. Один экран, по ссылке | смешанный |
-| `/space` | кабинет: зритель + стример, боковая панель | строгий |
-| `/create` | мастер создания страницы, 4 шага, без боковой панели | строгий |
-| `/overlay/<handle>/<виджет>` | голые страницы для OBS: алерты, цель, топ | зрительский |
-| 404 | «такого стримера нет, проверь ссылку» — анти-фишинг, свой стиль | строгий |
-| юридические | условия, конфиденциальность. Пишутся последними | строгий |
+| `/` | first screen — a bare search bar (like 1inch); scroll down — a landing page for streamers + a mini-games teaser | strict |
+| `/@handle` | streamer page: hero, donation form, feed, viewer reputation | mixed |
+| `/@handle/<slug>` | campaign: fundraiser / game / donation request. One screen, reached via a link | mixed |
+| `/space` | cabinet: viewer + streamer, sidebar | strict |
+| `/create` | page-creation wizard, 4 steps, no sidebar | strict |
+| `/games` | platform mini-games catalog: a showcase — what exists and what's coming. You play a game on the page of the streamer who enabled it | strict |
+| `/overlay/<handle>/<widget>` | bare pages for OBS: alerts, goal, top donors | viewer-facing |
+| 404 | "no such streamer, check the link" — anti-phishing, its own style | strict |
+| legal | terms, privacy. Written last | strict |
 
-**Лендинг `/` говорит с одним человеком — стримером.** Зритель на главную не ходит, он приходит по прямой ссылке. Опоры лендинга: деньги приходят сразу на твой кошелёк (выплат не существует) · 3% и всё · нам доверять не нужно — всё открыто, проверь · создать страницу за минуту.
+**`/games` is a catalog of game types, not a way to manage them.** A list of everything that exists on the platform (data — `lib/data/games.ts`, `GAMES`); the UI iterates the registry instead of hardcoding games. Managing a specific game for a streamer (enable it, create a round, get the link) lives in the cabinet `/space → Games` (§6) and on the campaign page `/@handle/<slug>` (§5). No game is built yet — all are "Soon" (an honest disabled state, not a fake placeholder).
 
-## 2. Слой данных
+**The `/` landing page speaks to one person — the streamer.** Viewers don't visit the homepage; they arrive via a direct link. The landing page's pillars: money arrives straight in your wallet (payouts don't exist) · 3% and that's it · you don't need to trust us — it's all open, verify it · create a page in a minute.
 
-Режим — свойство **типа данных**, не приложения. `DataProvider` отдаёт каждый тип из своего источника:
+## 2. Data layer
 
-| Данные | Источник | Режим |
+Mode is a property of the **data type**, not the app. `DataProvider` serves each type from its own source:
+
+| Data | Source | Mode |
 |---|---|---|
-| донат, эскроу | контракты, транзакцией из кошелька юзера | `chain` |
-| репутация | канистра crown-index, query | `icp` |
-| лента донатов | события `Settled` через RPC | `chain` |
-| профили, handle→адрес, уровни, кампании, сообщения и имена донатов | пока негде хранить | `mock` → `api` |
+| donation, escrow | contracts, via a transaction from the user's wallet | `chain` |
+| reputation | crown-index canister, query | `icp` |
+| donation feed | `Settled` events via RPC | `chain` |
+| profiles, handle→address, levels, campaigns, donation messages and names | nowhere to store them yet | `mock` → `api` |
 
-Правило миграции: `mock` меняется на `api` **по типу данных**, интерфейс провайдера при этом не двигается. Компоненты не знают, откуда пришли данные.
+Migration rule: `mock` switches to `api` **per data type**; the provider's interface doesn't move. Components don't know where the data came from.
 
-**Сообщение доната не лежит в блокчейне.** `Splitter.donate(streamer, gross)` не принимает текст; в `Settled` его нет. Сообщение, имя зрителя и конфиг кампании — офчейн, привязка к хешу транзакции. Это и есть ТЗ на `crown-app/api`: одна маленькая база — сообщения, имена, кампании. Пока его нет, всё это живёт в `mock`; донат без сообщения работает без сервера вообще.
+**A donation message doesn't live on the blockchain.** `Splitter.donate(streamer, gross)` doesn't take text; it's absent from `Settled`. The message, the viewer's name, and the campaign config are off-chain, tied to the transaction hash. That's exactly the spec for `crown-app/api`: one small database — messages, names, campaigns. Until it exists, all of this lives in `mock`; a donation with no message works with no server at all.
 
-## 3. Деньги: что фронт обязан и что ему запрещено
+## 3. Money: what the front end must and must not do
 
-Обязан:
+Must:
 
-1. Звать сплиттер и фабрику **только транзакцией пользователя**. Донор — это `msg.sender`; обёртка-контракт получила бы репутацию себе (`factory-spec.md` §3).
-2. Показывать сумму до копейки до подтверждения. USDC и только USDC.
-3. Двухшаговое (`approve` + `donate`) снаружи показывать одним действием: `donateWithPermit`, где кошелёк умеет; прогресс, где не умеет.
+1. Call the splitter and the factory **only via a user transaction**. The donor is `msg.sender`; a wrapper contract would receive the reputation itself (`factory-spec.md` §3).
+2. Show the exact amount before confirmation. USDC and only USDC.
+3. Present the two-step flow (`approve` + `donate`) externally as one action: `donateWithPermit` where the wallet supports it; a progress indicator where it doesn't.
 
-Запрещено — не «пока», а по построению:
+Forbidden — not "for now," but by design:
 
-| | Почему |
+| | Why |
 |---|---|
-| хранить ключи, подписывать за юзера | фронт вне доверенного контура |
-| держать/проксировать деньги, свой баланс | баланса на платформе не существует. Слово «баланс» в UI запрещено |
-| считать репутацию | её считает канистра; фронт только читает |
-| решать исход эскроу | это резолвер. Фронт лишь относит подпись в `claim` |
-| проверять «настоящесть» эскроу | это арифметика ядра, не UI |
+| storing keys, signing on the user's behalf | the front end is outside the trusted perimeter |
+| holding/proxying money, its own balance | no platform balance exists. The word "balance" is banned from the UI |
+| computing reputation | the canister computes it; the front end only reads |
+| deciding an escrow outcome | that's the resolver's job. The front end only relays the signature to `claim` |
+| verifying an escrow's "authenticity" | that's core arithmetic, not UI |
 
-## 4. Донат: машина состояний
+## 4. Donation: a state machine
 
-Снаружи зритель видит три состояния. Внутри их больше, но каждое внутреннее обязано отображаться в одно из внешних — новых внешних состояний не бывает.
+From the outside, a viewer sees three states. Internally there are more, but each internal one must map to one of the external ones — there are no new external states.
 
 ```
-ЗАПОЛНЯЮ                ОТПРАВЛЯЕТСЯ                ГОТОВО
-сумма (пресеты 1/5/10/своя)   одна плавная анимация      +репутация,
-имя, сообщение          без крипто-слов             донат в ленте
-кнопка «Задонатить 5$»
+FILLING OUT              SENDING                     DONE
+amount (presets 1/5/10/custom)  one smooth animation      +reputation,
+name, message             no crypto jargon            donation in the feed
+"Donate $5" button
    │
-   ├─ нет кошелька  → «Подключить кошелёк»  (кнопка меняется, экран тот же)
-   ├─ не та сеть    → «Переключить сеть»    (одна кнопка, кошелёк сам)
-   ├─ мало USDC     → «Не хватает 3$»       (кнопка неактивна, причина словами)
-   └─ нет allowance → внутренний шаг approve, зритель видит прогресс, не термин
+   ├─ no wallet     → "Connect wallet"    (button changes, same screen)
+   ├─ wrong network → "Switch network"    (one button, wallet handles it)
+   ├─ low on USDC   → "Short $3"          (button disabled, reason in words)
+   └─ no allowance  → internal approve step, viewer sees progress, not the term
 ```
 
-Ошибки — человеческим языком, без кодов и жаргона: `approve`, `allowance`, `gas`, `pending`, «транзакция» — слова, которых в UI нет. Отмена в кошельке — не ошибка: тихо вернуться в «заполняю».
+Errors — in plain language, no codes or jargon: `approve`, `allowance`, `gas`, `pending`, "transaction" — words that don't appear in the UI. Canceling in the wallet isn't an error: quietly return to "filling out."
 
-**Эскроу-донат (задание)** — та же форма плюс жизненный цикл. Ровно четыре терминальных статуса, один в один с контрактом, пятого нет:
-
-```
-В ХОЛДЕ ──исход 0──► ВЫПЛАЧЕНО   (+репутация)
-   │  ────исход 1──► ОТМЕНЕНО
-   └──после DEADLINE─► ВОЗВРАЩЕНО  (кнопку «вернуть» жмёт кто угодно)
-```
-
-`deadline` в UI всегда показывается как «деньги вернутся не позже …» — это обещание контракта, единственное, что фронт вправе обещать.
-
-## 5. Кампании
-
-Кампания — платёжная ссылка стримера. Для контрактов её не существует: деньги идут через тот же сплиттер на тот же кошелёк, репутация капает так же. Кампания — офчейн-обёртка (тип, тексты, цель, статус) поверх той же формы доната.
-
-- Типы v1: **сбор** (цель + прогресс), **игра** (класса A), **просьба** (текст + форма). Тип определяет центр экрана, всё остальное общее.
-- URL `/@handle/<слаг>` — ник стримера виден в ссылке, это анти-фишинг.
-- Экран: аватар + имя (мелко, для доверия) → заголовок → центр по типу → форма. Навигации сайта нет.
-- Жизненный цикл: активна → завершена. Завершённая страница не 404: показывает итог, форма выключена.
-
-**Игры класса A** (`project-map.md` §7) живут здесь: игра = тип кампании + правила на фронте + оверлей. Ноль контрактов. Игры класса B добавляют эскроу-форму из §4 и резолвера — сервис с ключом, который подписывает исход; фронт знает только его URL.
-
-## 6. Кабинет
-
-Боковая панель — шесть плоских пунктов. Вложенное подменю — признак перегруженного раздела, оно запрещено.
+**Escrow donation (a task)** — the same form plus a lifecycle. Exactly four terminal statuses, matching the contract one-to-one, no fifth:
 
 ```
-Главная      график донатов, сумма за период, последние донаты
-Донаты       полная лента: кто, сколько, сообщение
-Зрители      топ по репутации, уровни
-Игры         кампании: создать, ссылка, активна/завершена
-Виджеты      оверлеи OBS: алерты, цель, топ
-Настройки    профиль, соцсети, кошелёк
+IN ESCROW ──outcome 0──► PAID OUT   (+reputation)
+   │  ──────outcome 1──► CANCELED
+   └──after DEADLINE────► REFUNDED  (anyone can press "refund")
 ```
 
-Топбар: лого · аватар + ник · «Моя страница» (публичная, глазами зрителя). **Баланса в топбаре нет и не будет** — показывать нечего, деньги у стримера.
+`deadline` is always shown in the UI as "money returns no later than …" — that's the contract's promise, the only thing the front end is entitled to promise.
 
-Мастер `/create`: профиль (имя + `@handle`, превью ссылки) → соцсети (только официальные домены, ≤5) → кошелёк → уровни. Обязателен один шаг — кошелёк; дефолт — «использовать подключённый», ручной ввод — второстепенная опция с предупреждением: деньги пойдут сразу и только сюда. Уровни пропускаемы (дефолт 10/100/1000$). Минимум до своей страницы: имя + кошелёк, меньше минуты.
+## 5. Campaigns
 
-Соцсети проходят нормализацию: ссылка принимается только с официального домена платформы. Фишинг под видом ютуба не сохраняется — валидация на входе, не на отображении.
+A campaign is a streamer's payment link. It doesn't exist for the contracts: money flows through the same splitter to the same wallet, reputation accrues the same way. A campaign is an off-chain wrapper (type, copy, goal, status) on top of the same donation form.
 
-## 7. Словарь
+- v1 types: **fundraiser** (goal + progress), **game** (class A), **request** (text + form). Type determines the screen's center; everything else is shared.
+- URL `/@handle/<slug>` — the streamer's handle is visible in the link, that's anti-phishing.
+- Screen: avatar + name (small, for trust) → title → type-specific center → form. No site navigation.
+- Lifecycle: active → completed. A completed page isn't a 404: it shows the outcome, the form is disabled.
 
-Старая терминология (Realm, Reign, Crowning, «короновать», tiers) отменена. Новой пока нет. До неё:
+**Class A games** (`project-map.md` §7) live here: a game = a campaign type + front-end rules + an overlay. Zero contracts. Class B games add the escrow form from §4 and a resolver — a keyed service that signs the outcome; the front end only knows its URL.
 
-- в UI — обычные слова: страница стримера, донат, репутация, уровни, кампания;
-- в коде — нейтральные имена: `StreamerPage`, `Reputation`, `DonateForm`, `Campaign`. Брендовые слова, когда появятся, — заменой в словаре строк, не рефакторингом;
-- пасхалки — в названиях игр и разделов (кандидат: «Messages from the Stars» для алертов), никогда — в кнопках и подсказках.
+## 6. Cabinet
+
+Sidebar — flat items. A nested submenu is a sign of an overloaded section; it's forbidden — the one exception is the Games group, where each game may expand into its own tabs.
+
+```
+Home         donation chart, total for the period, recent donations
+Donations    full feed: who, how much, message
+Viewers      top by reputation, levels
+Games        per-game: build/configure, link, active/completed
+Widgets      OBS overlays: alerts, goal, top donors
+Settings     profile, socials, wallet
+```
+
+Top bar: logo · avatar + name · "My page" (opens the public page, through a viewer's eyes). **There's no balance in the top bar and there won't be** — nothing to show, the money is the streamer's.
+
+**The form builder lives inside a game — currently "Task for donation"** (pulled forward from IV's deferred "page and widget customization" — live streamer requests arrived earlier than expected). It's the streamer's tool for that game: build the form viewers fill in, then share the link + QR (both sit above the editor); viewers open a separate page and act there — the builder never takes money. Two inner tabs: **My page** (avatar/description on-off toggles, an ordered list of widgets — donate form, social icons — each with its own on-off toggle and reorder) and **Design** (a gallery of ready-made **themes** for one-click looks, plus manual background: color / gradient / image). No accent-color theme picker — the donate button and every interactive element stay Crown purple everywhere, per §II.1's one-accent rule; themes differ by backdrop only. A live preview with a **Phone/Desktop** toggle sits beside the editor so the streamer checks both before sharing.
+
+`/create` wizard: profile (name + `@handle`, link preview) → socials (official domains only, ≤5) → wallet → levels. One mandatory step — wallet; default is "use the connected wallet," manual entry is a secondary option with a warning: money will go straight there and only there. Levels are skippable (default $10/100/1000). Minimum to get your own page: name + wallet, under a minute.
+
+Socials go through normalization: a link is only accepted from a platform's official domain. Phishing disguised as YouTube isn't saved — validation happens on input, not on display.
+
+## 7. Glossary
+
+The old terminology (Realm, Reign, Crowning, "to crown," tiers) is retired. There's no new one yet. Until there is:
+
+- in the UI — plain words: streamer page, donation, reputation, levels, campaign;
+- in code — neutral names: `StreamerPage`, `Reputation`, `DonateForm`, `Campaign`. Brand words, once they exist, get swapped in via a string dictionary, not a refactor;
+- easter eggs — in game and section names (candidate: "Messages from the Stars" for alerts), never in buttons and hints.
 
 ---
 
-# II. Дизайн
+# II. Design
 
-**Один цвет · Тёмная тема · Понятно любому**
+**One color · Dark theme · Clear to anyone**
 
-Референсы: Solana, Phantom, Aave, Rabby — крипта, которая «просто весело». Антиреференсы: Monero, криптопанки, трейдинг-терминалы.
+References: Solana, Phantom, Aave, Rabby — crypto that's "just fun." Anti-references: Monero, cryptopunks, trading terminals.
 
-## 1. Палитра
+## 1. Palette
 
-Четыре роли. Пятой нет. Больше трёх оттенков на странице — брак.
+Four roles. No fifth. More than three shades on a page is a defect.
 
-| Роль | Значение | Где |
+| Role | Value | Where |
 |---|---|---|
-| фон | `#141318`, поверхности на ступень светлее | везде |
-| текст | почти белый; суммы крупно, `tabular-nums` | везде |
-| акцент | фиолетовый ~`#8B7CF6` (как Phantom, тёплый) | **только** действие и бренд |
-| ошибка | приглушённый красный | только сломанное |
+| background | `#141318`, surfaces one step lighter | everywhere |
+| text | near-white; amounts large, `tabular-nums` | everywhere |
+| accent | purple ~`#8B7CF6` (like Phantom, warm) | **only** actions and brand |
+| error | muted red | only for something broken |
 
-Правила:
+Rules:
 
-- Цвета́ НЕ много. Как у Claude и Discord: интерфейс нейтральный, акцент точечный. На типичном экране фиолетовых пятен два-три — кнопка действия, активный пункт, лого. Фиолетовые фоны, геро-заливки, декор — запрещены.
-- **Никаких зелёных циферок.** Сумма не нуждается в цвете: размер и вес решают. Плюс к репутации — белым.
-- Статусы — формой (пилюля, иконка), не светофором.
-- Логотипы сторонних сервисов (YouTube, Twitch, Kick, X) перекрашиваются в наш нейтральный. Чужой красный на нашей странице — дыра в палитре.
-- Тема тёмная. Светлая — возможно потом; сейчас под неё не проектировать.
+- Colors are NOT plentiful. Like Claude and Discord: a neutral interface, a pinpoint accent. On a typical screen there are two or three purple spots — the action button, the active nav item, the logo. Purple backgrounds, hero fills, decoration — forbidden.
+- **No green numbers.** An amount doesn't need color: size and weight do the job. A reputation gain — in white.
+- Statuses communicate via shape (a pill, an icon), not a traffic light.
+- Third-party service logos (YouTube, Twitch, Kick, X) are recolored to our neutral. Someone else's red on our page is a hole in the palette.
+- The theme is dark. Light mode — maybe later; don't design for it now.
 
-## 2. Минимализм
+## 2. Minimalism
 
-- Без мелких шрифтов, лишних деталей, декора. На экране одна мысль и одна кнопка.
-- Понятно человеку, который никогда не трогал компьютер. Это правило про **слова и число шагов**, не про картинку: без крипто-жаргона, двухшаговое снаружи — одно действие, ошибки человеческим языком («Не хватает 2$», не «insufficient allowance»).
-- Подсказки — максимум одна короткая строка на секцию.
-- Анимации плавные и в меру: момент доната, переходы состояний. Не ambient-мельтешение.
-- Красиво и приятно глазу. Красота здесь — точность отступов и типографики, не спецэффекты.
+- No small type, no extra detail, no decoration. One idea and one button per screen.
+- Understandable to someone who's never touched a computer. This rule is about **words and step count**, not visuals: no crypto jargon, a two-step flow presented externally as one action, errors in plain language ("Short $2," not "insufficient allowance").
+- Hints — at most one short line per section.
+- Animations are smooth and sparing: the moment of donating, state transitions. Not ambient flickering.
+- Beautiful and pleasant to look at. Beauty here is precise spacing and typography, not special effects.
 
-## 3. Два регистра
+## 3. Two registers
 
-| Регистр | Где | Как |
+| Register | Where | How |
 |---|---|---|
-| строгий | всё, где деньги и управление: форма в момент подтверждения, эскроу, мастер (шаг кошелька), кабинет, лендинг | нейтрали, один акцент на одной кнопке. Играться с цветом здесь = выглядеть скамом |
-| зрительский | страница стримера, кампании-игры, оверлеи, маскот | тот же свод правил, но живее: анимация доната, характер |
+| strict | anywhere money and control live: the form at the moment of confirmation, escrow, the wizard (wallet step), the cabinet, the landing page | neutrals, one accent on one button. Playing with color here reads as a scam |
+| viewer-facing | the streamer page, campaign games, overlays, the mascot | the same rules, but livelier: a donation animation, personality |
 
-Граница проходит внутри страниц: на странице стримера геро — зрительский, форма доната — строгий.
+The boundary runs within pages: on a streamer's page, the hero is viewer-facing, the donation form is strict.
 
-## 4. Идентичность
+## 4. Identity
 
-- Маскот: кандидат — корона-существо (как краб у Anthropic, Clyde у Discord). Простая форма, читается в 16px. Появляется в зрительском регистре, никогда — рядом с деньгами.
-- Пасхалки с любовью — в названиях игр и разделов. UI-тексты функциональные.
+- Mascot: candidate — a crown-creature (like Anthropic's crab, Discord's Clyde). A simple shape, legible at 16px. Appears in the viewer-facing register, never next to money.
+- Easter eggs with love — in game and section names. UI copy stays functional.
 
 ---
 
-# III. План сборки
+# III. Build Plan
 
-Каждый этап заканчивается работающей вещью, которую можно показать. Не начинать следующий, пока у текущего не выполнен критерий готовности. Всё до F8 не требует от бэкендера ничего, кроме файла адресов тестнета.
+Every stage ends with something working that can be shown. Don't start the next one until the current one's done-criterion is met. Everything up to F8 needs nothing from the backend dev except the testnet address file.
 
-| # | Что | Зависит от | Критерий готовности |
+| # | What | Depends on | Done when |
 |---|---|---|---|
-| F1 | Дизайн-токены + макеты четырёх экранов: кампания, страница стримера, главная, кабинет | — | макеты утверждены владельцем |
-| F2 | Каркас: маршруты из I §1, `DataProvider` с разделением по типу данных, всё на `mock` | F1 | сайт кликается насквозь на моках, включая 404 |
-| F3 | Донат ончейн: конфиг сетей/адресов, подключение кошелька, форма с машиной состояний I §4 | F2, **адреса тестнета от бэка** (сплиттер, USDC) | реальный USDC-донат на Sepolia проходит; все ветки ошибок показаны словами |
-| F4 | Чтение: лента из `Settled`, репутация из канистры | F3, адрес канистры | донат из F3 появляется в ленте и в цифре репутации без перезагрузки |
-| F5 | Кампании на моке + первая игра класса A | F2 (деньги — F3) | стример создаёт кампанию в кабинете, ссылка открывается, донат через неё работает |
-| F6 | Мастер `/create` + кабинет (6 разделов) | F2 | новый стример: подключил кошелёк → создал страницу → получил ссылку, меньше минуты |
-| F7 | Оверлеи OBS: алерты, цель, топ | F4 | оверлей в OBS показывает донат через секунды после транзакции |
-| F8 | Эскроу-донаты: форма создания, статусы, `claim`/`refund` | F3, **фабрика в тестнете + резолвер** | полный цикл на Sepolia: создать → вердикт → выплата; и ветка refund |
+| F1 | Design tokens + mockups of four screens: campaign, streamer page, homepage, cabinet | — | mockups approved by the owner |
+| F2 | Skeleton: routes from I §1, `DataProvider` split by data type, everything on `mock` | F1 | the site clicks through end-to-end on mocks, including 404 |
+| F3 | On-chain donation: network/address config, wallet connection, the form with the state machine from I §4 | F2, **testnet addresses from the backend** (splitter, USDC) | a real USDC donation on Sepolia goes through; every error branch is shown in words |
+| F4 | Reading: feed from `Settled`, reputation from the canister | F3, canister address | a donation from F3 shows up in the feed and the reputation number with no reload |
+| F5 | Campaigns on mock + the first class-A game | F2 (money — F3) | a streamer creates a campaign in the cabinet, the link opens, a donation through it works |
+| F6 | `/create` wizard + cabinet (6 sections) | F2 | a new streamer: connects a wallet → creates a page → gets a link, under a minute |
+| F7 | OBS overlays: alerts, goal, top donors | F4 | the OBS overlay shows a donation seconds after the transaction |
+| F8 | Escrow donations: creation form, statuses, `claim`/`refund` | F3, **factory on testnet + resolver** | a full cycle on Sepolia: create → verdict → payout; plus the refund branch |
 
-Порядок F3↔F5 можно поменять местами, если адресов тестнета долго нет: кампании и игра полностью живут на моке.
+The F3↔F5 order can swap if testnet addresses take a while: campaigns and the game live entirely on mock either way.
 
-**Что просить у бэка, один артефакт:** файл адресов тестнета — сплиттер, USDC, канистра (для F3–F4); позже фабрика (для F8). Резолвера для разработки фронт поднимает сам (сервис с ключом, подписывает `keccak(chainid, escrow, outcome)`); продовый — зона бэка.
+**What to ask the backend for, one artifact:** a testnet address file — splitter, USDC, canister (for F3–F4); later the factory (for F8). The front end stands up its own resolver for development (a keyed service that signs `keccak(chainid, escrow, outcome)`); the production one is the backend's territory.
 
-**Что копится на `crown-app/api`** (не блокирует ничего до публичного запуска): сообщения и имена донатов (привязка к хешу транзакции), конфиги кампаний, индекс `handle → адрес` для поиска. Одна база, один маленький сервис. До него — `mock`.
+**What's accumulating for `crown-app/api`** (blocks nothing before public launch): donation messages and names (tied to the transaction hash), campaign configs, a `handle → address` index for search. One database, one small service. Until then — `mock`.
 
 ---
 
 # IV. Post-front
 
-Всё, чего **нет** во фронте, и почему. Каждая строка — сознательно отложенный кусок с известным местом подключения.
+Everything the front end **doesn't** have, and why. Every line is a deliberately deferred piece with a known place to plug in.
 
-Правило то же, что в ядре: **пока строка здесь — в коде нет ни компонента, ни хука, ни поля конфига под неё.** «Подготовить место» — запрещённая спекулятивная обобщённость.
+Same rule as in the core: **while a line is here, there's no component, hook, or config field for it in the code.** "Prepare a place for it" is a forbidden speculative generality.
 
-Реализовал — удали строку отсюда.
+Built it — delete the line.
 
-## Отложенные поверхности
+## Deferred surfaces
 
-| Что | Почему не сейчас | Триггер |
+| What | Why not now | Trigger |
 |---|---|---|
-| `/u/<address>` — публичная страница зрителя | не входит в петлю «донат → репутация» | когда зрители начнут делиться профилями |
-| `/ops`, `/admin` — модерация, метрики | нет бэкенда, нет юзеров, нечего модерировать | вместе с `crown-app/api` и модерацией |
-| кастомизация страницы и виджетов | сначала один хороший дефолтный вид | запросы живых стримеров |
-| светлая тема | продукт честно тёмный, аудитория живёт в OBS/Discord | после запуска, по жалобам |
-| короткие ссылки-редиректы кампаний | `/@handle/<слаг>` достаточно и анти-фишингов | если ссылки окажутся длинны для чатов |
+| `/u/<address>` — a public viewer page | not part of the "donation → reputation" loop | once viewers start sharing profiles |
+| `/ops`, `/admin` — moderation, metrics | no backend, no users, nothing to moderate | alongside `crown-app/api` and moderation |
+| light theme | the product is honestly dark; the audience lives in OBS/Discord | after launch, on complaints |
+| short redirect links for campaigns | `/@handle/<slug>` is enough and it's anti-phishing | if links turn out too long for chat |
 
-## Отложенные фичи
+## Deferred features
 
-| Что | Почему не сейчас | Триггер |
+| What | Why not now | Trigger |
 |---|---|---|
-| live/offline статус стримера | опрос Twitch/YouTube API — отдельный сервис | вместе с `crown-app/api` |
-| onramp: зритель без крипты покупает USDC картой | сторонний виджет, юрисдикционные вопросы | до публичного запуска — главный барьер зрителя |
-| Solana-путь | ядро задеплоено только на EVM-тестнет | деплой бэка на devnet |
-| ENS/имена кошельков в ленте | косметика поверх адресов | после F4 |
-| TTS в алертах | требует сообщений, то есть `api` | вместе с сервисом сообщений |
-| keeper: кто жмёт `claim` за победителя | `claim` зовёт кто угодно — пока вручную/кнопкой | первая живая игра класса B |
-| уведомления (колокольчик) | нечего доставлять | после запуска |
-| новая терминология и маскот | решение владельца, не кода | до публичного запуска |
-| экспорт истории донатов (CSV, налоги) | стримерам понадобится, но не в v1 | первый запрос |
+| streamer live/offline status | polling the Twitch/YouTube API — a separate service | alongside `crown-app/api` |
+| onramp: a viewer with no crypto buys USDC by card | a third-party widget, jurisdictional questions | before public launch — the main barrier for viewers |
+| Solana path | the core is only deployed to an EVM testnet | backend deploy to devnet |
+| ENS/wallet names in the feed | cosmetic layer over addresses | after F4 |
+| TTS in alerts | requires messages, i.e. `api` | alongside the message service |
+| keeper: who presses `claim` for the winner | anyone can call `claim` — manual/button for now | the first live class-B game |
+| notifications (a bell icon) | nothing to deliver yet | after launch |
+| new terminology and mascot | an owner decision, not a code one | before public launch |
+| donation history export (CSV, taxes) | streamers will want it, but not in v1 | first request |
 
-## Решения, а не код
+## Decisions, not code
 
-| Что | Развилка | Когда решать |
+| What | Fork in the road | When to decide |
 |---|---|---|
-| где живёт `crown-app/api` | свой сервис рядом с Next.js (API-роуты) vs отдельный репозиторий по карте проекта | до публичного запуска; на mock-этапе не важно |
-| сеть запуска | Base / Arbitrum / Optimism — везде есть Cancun (`TSTORE`) | вместе с бэком, до mainnet |
-| платит ли платформа газ за зрителя | UX-барьер «нужен ETH на газ» | вместе с onramp |
+| where `crown-app/api` lives | its own service next to Next.js (API routes) vs. a separate repo per the project map | before public launch; doesn't matter at the mock stage |
+| launch network | Base / Arbitrum / Optimism — all have Cancun (`TSTORE`) | alongside the backend, before mainnet |
+| does the platform pay gas for the viewer | the "you need ETH for gas" UX barrier | alongside onramp |

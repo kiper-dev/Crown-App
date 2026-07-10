@@ -1,4 +1,4 @@
-// Уровень зрителя по репутации у стримера. Уровни — пороги в долларах.
+// A viewer's level from their reputation with a streamer. Levels are thresholds in dollars.
 export function levelInfo(reputation: number, levels: number[]) {
   const sorted = [...levels].sort((a, b) => a - b);
   let level = 0;

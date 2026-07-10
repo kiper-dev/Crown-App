@@ -1,13 +1,5 @@
-import { Logo } from "./Logo";
-import { TopRight } from "./TopRight";
+import { SiteHeader } from "./SiteHeader";
 
 export function AppBar() {
-  return (
-    <header className="appbar">
-      <Logo />
-      <div className="right">
-        <TopRight />
-      </div>
-    </header>
-  );
+  return <SiteHeader />;
 }
