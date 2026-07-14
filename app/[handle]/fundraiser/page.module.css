@@ -1,0 +1,155 @@
+/* Public fundraiser page — one centered column, the crown as the central figure.
+   Backdrop comes from the streamer's fundraiser design; accents stay on-charter. */
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.col {
+  width: 100%;
+  max-width: 560px;
+  padding: 48px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+/* Trust row — who is collecting (anti-phishing: face + handle up top). */
+.who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.handle {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.live {
+  color: var(--text-2);
+}
+
+.pledge {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  margin-top: 8px;
+  max-width: 24ch;
+}
+.desc {
+  font-size: 16px;
+  color: var(--text-2);
+  max-width: 48ch;
+}
+.refundNote {
+  font-size: 14px;
+  color: var(--text-3);
+  max-width: 44ch;
+}
+
+.pct {
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
+}
+.sums {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.sums span {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.left {
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.chipInCard {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+.customAmount {
+  width: 110px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-size: 14px;
+}
+.customAmount:focus {
+  outline: none;
+  border-color: rgba(235, 233, 244, 0.32);
+}
+
+.socials {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.socials a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+.socials a:hover {
+  color: var(--text-1);
+}
+
+.shareRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.addr {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 14px;
+  cursor: pointer;
+}
+.addr:hover {
+  border-color: var(--line-strong);
+  color: var(--text-1);
+}
+
+.qrBox {
+  padding: 14px;
+  border-radius: var(--r-2);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+.footer {
+  margin-top: 28px;
+  opacity: 0.7;
+}

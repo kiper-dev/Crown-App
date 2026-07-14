@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { PageDesign, PageWidget, Profile } from "./types";
 
 export const BIO_MAX = 160;
+export const TASK_MAX = 200;
 
 export const WIDGET_LABEL: Record<PageWidget["kind"], string> = {
   donate: "Donate form",
@@ -12,6 +13,9 @@ export const DEFAULT_WIDGETS: PageWidget[] = [
   { kind: "donate", enabled: true },
   { kind: "socials", enabled: true },
 ];
+
+export const DEFAULT_DONATE_PRESETS: number[] = [1, 5, 10];
+export const MAX_DONATE_PRESETS = 6;
 
 export const DEFAULT_DESIGN: PageDesign = {
   background: { type: "color", value: "#141318" },
@@ -43,13 +47,17 @@ export function sameBackground(a: PageDesign, b: PageDesign): boolean {
 
 // Back-fills profiles saved before the page builder shipped, so they render with sane defaults
 // instead of undefined widgets/design.
-export function withPageDefaults(profile: Profile): Required<Pick<Profile, "avatarEnabled" | "bioEnabled" | "widgets" | "design">> & Profile {
+export function withPageDefaults(
+  profile: Profile
+): Required<Pick<Profile, "avatarEnabled" | "bioEnabled" | "widgets" | "design" | "task" | "donatePresets">> & Profile {
   return {
     ...profile,
     avatarEnabled: profile.avatarEnabled ?? true,
     bioEnabled: profile.bioEnabled ?? true,
     widgets: profile.widgets?.length ? profile.widgets : DEFAULT_WIDGETS,
     design: profile.design ?? DEFAULT_DESIGN,
+    task: profile.task ?? "",
+    donatePresets: profile.donatePresets ?? DEFAULT_DONATE_PRESETS,
   };
 }
 

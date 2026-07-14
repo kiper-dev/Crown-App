@@ -67,7 +67,7 @@ export default function CampaignPage({ params }: { params: { handle: string; slu
           </div>
         ) : null}
 
-        <DonateForm handle={streamer.handle} defaultAmount={10} streamerName={`${streamer.name}'s wallet`} />
+        <DonateForm handle={streamer.handle} defaultAmount={10} streamerName={`${streamer.name}'s wallet`} slug={campaign.slug} />
 
         <div className="powered">
           Powered by <Link href="/">Crown</Link>

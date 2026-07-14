@@ -4,11 +4,13 @@
   gap: 20px;
 }
 
-/* ---- link + QR row ---- */
+/* ---- link + QR row (under the preview) ---- */
 .linkRow {
   position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   flex-wrap: wrap;
 }
@@ -26,6 +28,15 @@
   border: 1px solid var(--line);
   color: var(--accent);
   font-size: 14px;
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease);
+}
+.linkChip:hover {
+  border-color: var(--line-strong);
+}
+.linkChip:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-neutral);
 }
 .linkRow :global(.btn-outline) {
   height: 40px;
@@ -36,7 +47,8 @@
 .qrPop {
   position: absolute;
   top: 48px;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -71,13 +83,17 @@
 }
 
 /* ---- two-column builder ---- */
+/* Editor gets a STABLE width that doesn't depend on the preview device (was 1fr — it ballooned to
+   ~944px next to the phone and shrank to ~504px next to the desktop preview, so switching devices
+   made the editor jump). Fixed left column → the editor never resizes; the preview column takes the
+   rest, so the desktop preview can grow wide without touching the editor. */
 .builder {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 28px;
+  grid-template-columns: minmax(420px, 500px) minmax(0, 1fr);
+  gap: 32px;
   align-items: start;
 }
-@media (max-width: 860px) {
+@media (max-width: 980px) {
   .builder {
     grid-template-columns: 1fr;
   }
@@ -111,8 +127,8 @@
   cursor: pointer;
 }
 .tabOn {
-  background: var(--bg-2);
-  color: var(--text-1);
+  background: var(--chart-grad);
+  color: var(--chart-grad-ink);
 }
 
 .tabBody {
@@ -161,19 +177,43 @@
   font-size: 14px;
 }
 
-.charCount {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--text-3);
-  text-align: right;
+/* description: dark field (was unstyled → browser-white — the eyesore) with the counter tucked in */
+.bioField {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-
-.addWidgetBtn {
+.bioBox {
+  position: relative;
+}
+.bioInput {
   width: 100%;
+  background: var(--bg-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  padding: 13px 15px 24px;
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
 }
-.addWidgetBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.bioInput::placeholder {
+  color: var(--text-3);
+}
+.bioInput:focus {
+  outline: none;
+  border-color: rgba(235, 233, 244, 0.32);
+  box-shadow: var(--ring-neutral);
+}
+.charCount {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: 11px;
+  color: var(--text-3);
+  pointer-events: none;
 }
 
 .widgetList {
@@ -181,18 +221,30 @@
   flex-direction: column;
   gap: 8px;
 }
+.widgetGroup {
+  display: flex;
+  flex-direction: column;
+}
 .widgetRow {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: var(--r-2);
+  transition: border-color var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
+}
+.widgetRow:hover {
+  border-color: var(--line-strong);
+}
+.widgetOff {
+  opacity: 0.55;
 }
 .dragHandle {
   color: var(--text-3);
   flex: none;
+  cursor: grab;
 }
 .widgetStepper {
   display: flex;
@@ -215,11 +267,116 @@
   opacity: 0.25;
   cursor: default;
 }
-.widgetName {
+.widgetNameBtn {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-1);
+  cursor: pointer;
+  text-align: left;
+}
+.widgetChev {
+  color: var(--text-3);
+  transition: transform var(--dur-1) var(--ease);
+}
+.widgetChevOn {
+  transform: rotate(180deg);
+}
+.widgetConfig {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 15px 4px;
+}
+.presetRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.presetChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 44px;
+  padding: 0 6px 0 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-0);
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+.presetChip:focus-within {
+  border-color: rgba(235, 233, 244, 0.32);
+  box-shadow: var(--ring-neutral);
+}
+.presetRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+.presetRemove:hover {
+  color: var(--text-1);
+  background: var(--bg-2);
+}
+.presetAdd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  border: 1px dashed var(--line-strong);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+.presetAdd:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.presetDollar {
+  color: var(--text-3);
+  font-size: 16px;
+  font-weight: 600;
+}
+.presetChip input {
+  width: 46px;
+  background: transparent;
+  border: none;
+  color: var(--text-1);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+}
+.presetChip input:focus {
+  outline: none;
+}
+.presetChip input::-webkit-outer-spin-button,
+.presetChip input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.presetChip input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* ---- design tab: themes gallery ---- */
@@ -358,20 +515,27 @@
   background: var(--bg-1);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
-  padding: 3px;
+  padding: 4px;
 }
 .deviceSeg button {
-  height: 30px;
-  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 18px;
   border: none;
   border-radius: var(--r-pill);
   background: transparent;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.deviceSeg button:hover:not(.deviceOn) {
+  color: var(--text-1);
 }
 .deviceOn {
-  background: var(--bg-2);
-  color: var(--text-1);
+  background: var(--chart-grad);
+  color: var(--chart-grad-ink);
 }

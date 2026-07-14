@@ -6,7 +6,7 @@ import { useWallet } from "@/lib/chain/useWallet";
 
 type Status = "idle" | "sending" | "done" | "error";
 
-const PRESETS = [1, 5, 10];
+const DEFAULT_PRESETS = [1, 5, 10];
 
 function short(addr?: string) {
   return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : "";
@@ -25,21 +25,27 @@ export function DonateForm({
   handle,
   defaultAmount = 5,
   streamerName = "the streamer's wallet",
+  presets = DEFAULT_PRESETS,
+  slug,
 }: {
   handle: string;
   defaultAmount?: number;
   streamerName?: string;
+  presets?: number[];
+  slug?: string; // campaign page passes its slug so only that campaign's total is bumped
 }) {
   const { mode, donate } = useCrown();
   const wallet = useWallet();
+  const PRESETS = presets.length ? presets : DEFAULT_PRESETS;
 
-  const [amount, setAmount] = useState(defaultAmount);
-  const [activePreset, setActivePreset] = useState<number | "custom">(
-    PRESETS.includes(defaultAmount) ? defaultAmount : "custom"
-  );
-  const [customOpen, setCustomOpen] = useState(!PRESETS.includes(defaultAmount));
-  const [customValue, setCustomValue] = useState(PRESETS.includes(defaultAmount) ? "" : String(defaultAmount));
-  const lastPreset = useRef<number>(PRESETS.includes(defaultAmount) ? defaultAmount : defaultAmount);
+  // Open on a real preset. If defaultAmount isn't one of this streamer's presets, fall back to a
+  // middle preset instead of opening the "custom" input (which read as broken with custom presets).
+  const initialAmount = PRESETS.includes(defaultAmount) ? defaultAmount : PRESETS[Math.min(1, PRESETS.length - 1)];
+  const [amount, setAmount] = useState(initialAmount);
+  const [activePreset, setActivePreset] = useState<number | "custom">(initialAmount);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customValue, setCustomValue] = useState("");
+  const lastPreset = useRef<number>(initialAmount);
 
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
@@ -67,6 +73,9 @@ export function DonateForm({
       setActivePreset(lastPreset.current);
       setAmount(lastPreset.current);
       setCustomOpen(false);
+    } else {
+      // Show the rounded whole-dollar value that will actually be donated (no "10.5 shown, 11 sent").
+      setCustomValue(String(amount));
     }
   }
 
@@ -85,7 +94,7 @@ export function DonateForm({
 
     setStatus("sending");
     try {
-      await donate({ handle, amount, name, message }, wallet.address);
+      await donate({ handle, amount, name, message, slug }, wallet.address);
       setStatus("done");
       setName("");
       setMessage("");
@@ -97,7 +106,7 @@ export function DonateForm({
       } else {
         setStatus("error");
         setError(text);
-        setTimeout(() => setStatus("idle"), 10);
+        setTimeout(() => setStatus("idle"), 10000);
       }
     }
   }

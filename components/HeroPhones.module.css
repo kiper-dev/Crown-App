@@ -1,0 +1,310 @@
+/* Three fanned phones for the hero. Center raised and in front, sides tucked behind
+   and dropped down; the whole strip is clipped at the bottom so the phones bleed off
+   the section edge — same composition as the reference, dark instead of white. */
+
+.phones {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 430px;
+  margin-top: 48px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.phone {
+  position: relative;
+  flex: none;
+  width: 256px;
+  height: 540px;
+  border-radius: 44px;
+  padding: 10px;
+  background: #0c0b10;
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-float);
+}
+.center {
+  z-index: 2;
+}
+.side {
+  z-index: 1;
+  transform: translateY(58px) scale(0.95);
+}
+.left {
+  margin-right: -52px;
+}
+.right {
+  margin-left: -52px;
+}
+
+.notch {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  background: #0c0b10;
+  z-index: 3;
+}
+
+.screen {
+  height: 100%;
+  border-radius: 35px;
+  background: var(--bg-1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.screenDark {
+  background: #100f16;
+}
+
+/* ---- status bar ---- */
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px 6px;
+}
+.time {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.statusDark .time {
+  color: var(--text-1);
+}
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bars {
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--text-3);
+  opacity: 0.6;
+}
+.battery {
+  width: 22px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1.5px solid var(--text-3);
+  position: relative;
+}
+.battery::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  right: 6px;
+  border-radius: 1px;
+  background: var(--text-2);
+}
+
+/* ---- LEFT: donate page ---- */
+.donateScreen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 22px 0;
+  gap: 6px;
+}
+.donateScreen :global(.mono) {
+  margin-bottom: 4px;
+}
+.donName {
+  font-size: 20px;
+  font-weight: 700;
+}
+.donHandle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.chip {
+  height: 36px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0f0e14;
+}
+.donateBtn {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-2);
+  background: var(--accent);
+  color: #0f0e14;
+  font-size: 16px;
+  font-weight: 700;
+}
+.donNote {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 12px;
+}
+
+/* ---- CENTER: earnings ---- */
+.earnScreen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 22px 0;
+}
+.earnTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.earnLabel {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.bigNum {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.cents {
+  font-size: 22px;
+  color: var(--text-2);
+}
+.delta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #6bd39a;
+  margin-top: 4px;
+}
+.deltaDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6bd39a;
+}
+.tags {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.tag {
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  height: 120px;
+  width: 100%;
+  margin-top: 4px;
+}
+.bar {
+  width: 20px;
+  border-radius: 6px 6px 4px 4px;
+  background: var(--bg-3);
+}
+.barHot {
+  background: var(--accent);
+}
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 18px;
+}
+.tab {
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.tabActive {
+  background: var(--bg-2);
+  color: var(--text-1);
+}
+
+/* ---- RIGHT: growth, dark ---- */
+.growthScreen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 22px 0;
+}
+.growthLabel {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+.growthNum {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.growthSub {
+  font-size: 12.5px;
+  color: #6bd39a;
+  margin-top: 4px;
+}
+.growthChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 150px;
+  width: 100%;
+  margin-top: 24px;
+}
+.gbar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top, var(--accent-down), var(--accent));
+  opacity: 0.9;
+}
+.growthFoot {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .side {
+    display: none;
+  }
+  .phones {
+    height: 400px;
+    margin-top: 32px;
+  }
+}

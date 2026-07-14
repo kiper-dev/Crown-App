@@ -66,6 +66,21 @@ export const SOCIAL_LABEL: Record<Social["kind"], string> = {
   onlyfans: "OnlyFans",
 };
 
+export const SOCIAL_KINDS: Social["kind"][] = ["youtube", "twitch", "kick", "x", "tiktok", "instagram", "telegram", "onlyfans"];
+
+// Real brand colors, used only in link-editing pickers (create wizard, page builder) — everywhere
+// else on the site social icons stay neutral (design charter). Fg is the icon color for contrast.
+export const SOCIAL_BRAND: Record<Social["kind"], { bg: string; fg: string }> = {
+  youtube: { bg: "#FF0000", fg: "#fff" },
+  twitch: { bg: "#9146FF", fg: "#fff" },
+  kick: { bg: "#53FC18", fg: "#0A0A0A" },
+  telegram: { bg: "#26A5E4", fg: "#fff" },
+  x: { bg: "#000000", fg: "#fff" },
+  tiktok: { bg: "#000000", fg: "#fff" },
+  instagram: { bg: "#E1306C", fg: "#fff" },
+  onlyfans: { bg: "#00AFF0", fg: "#fff" },
+};
+
 // Mini-game icons — outlined, neutral (recolored via currentColor). One per game from lib/data/games.
 export function GameIcon({ id, ...props }: { id: GameId } & SVGProps<SVGSVGElement>) {
   const p = { width: 48, height: 48, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true, ...props };
@@ -74,8 +89,8 @@ export function GameIcon({ id, ...props }: { id: GameId } & SVGProps<SVGSVGEleme
       return (<svg {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" /></svg>);
     case "roulette":
       return (<svg {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.2" /><path d="M12 3v3.8M12 17.2V21M3 12h3.8M17.2 12H21M5.64 5.64l2.68 2.68M15.68 15.68l2.68 2.68M18.36 5.64l-2.68 2.68M8.32 15.68l-2.68 2.68" /><circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none" /></svg>);
-    case "battles":
-      return (<svg {...p}><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" /><line x1="13" y1="19" x2="19" y2="13" /><line x1="16" y1="16" x2="20" y2="20" /><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5" /><line x1="5" y1="14" x2="9" y2="18" /><line x1="7" y1="17" x2="4" y2="20" /></svg>);
+    case "fundraiser":
+      return (<svg {...p}><path d="M6 21V4" /><path d="M6 4.5c2.2-1.4 4.3-1.4 6 0s3.8 1.4 6 0V13c-2.2 1.4-4.3 1.4-6 0s-3.8-1.4-6 0" /></svg>);
   }
 }
 
@@ -95,6 +110,24 @@ export function NavIcon({ name }: { name: "home" | "donations" | "viewers" | "ga
     case "settings":
       return (<svg {...p}><path d="M4 7h16" /><circle cx="15" cy="7" r="2.2" fill="var(--bg-0)" /><path d="M4 12h16" /><circle cx="9" cy="12" r="2.2" fill="var(--bg-0)" /><path d="M4 17h16" /><circle cx="13" cy="17" r="2.2" fill="var(--bg-0)" /></svg>);
   }
+}
+
+export function PhoneIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden {...props}>
+      <rect x="7" y="2.5" width="10" height="19" rx="2.4" />
+      <path d="M11 18.2h2" />
+    </svg>
+  );
+}
+
+export function DesktopIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden {...props}>
+      <rect x="2.5" y="4" width="19" height="13" rx="2" />
+      <path d="M9 21h6M12 17v4" />
+    </svg>
+  );
 }
 
 export function CopyIcon(props: SVGProps<SVGSVGElement>) {

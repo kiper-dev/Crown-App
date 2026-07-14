@@ -1,0 +1,223 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.help {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.help b {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
+}
+
+/* ---- mini preview (static hint of the overlay) ---- */
+.mini {
+  position: relative;
+  height: 130px;
+  display: flex;
+  padding: 14px;
+  background: radial-gradient(120% 120% at 50% 0%, var(--bg-2), var(--bg-0));
+  border-bottom: 1px solid var(--line);
+}
+.miniCenterTop {
+  justify-content: center;
+  align-items: flex-start;
+}
+.miniCenterBottom {
+  justify-content: center;
+  align-items: flex-end;
+}
+.miniLeft {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.miniLine {
+  display: block;
+  height: 6px;
+  width: 70px;
+  border-radius: var(--r-pill);
+  background: rgba(235, 233, 244, 0.28);
+}
+.miniLineShort {
+  width: 42px;
+  background: rgba(235, 233, 244, 0.16);
+}
+
+.miniAlert {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  background: rgba(20, 19, 24, 0.95);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-2);
+}
+.miniAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  flex: none;
+}
+.miniAlertBody {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.miniGoal {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(20, 19, 24, 0.95);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+.miniGoalTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.miniGoalNum {
+  width: 34px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: rgba(235, 233, 244, 0.28);
+}
+.miniTrack {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.miniFill {
+  display: block;
+  height: 100%;
+  width: 62%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+
+.miniTop {
+  min-width: 130px;
+  padding: 9px 11px;
+  background: rgba(20, 19, 24, 0.95);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+.miniTopHead {
+  display: block;
+  width: 46px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: rgba(235, 233, 244, 0.2);
+  margin-bottom: 8px;
+}
+.miniTopRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 0;
+}
+.miniRank {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  flex: none;
+}
+.miniTopRow:first-of-type .miniRank {
+  background: var(--accent-soft);
+}
+.miniAmt {
+  width: 22px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: rgba(235, 233, 244, 0.28);
+  margin-left: auto;
+}
+
+/* ---- card body ---- */
+.cardBody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.cardDesc {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.urlRow {
+  margin-top: 4px;
+  padding: 9px 12px;
+  border-radius: var(--r-2);
+  background: var(--bg-0);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.url {
+  font-size: 12.5px;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.actions :global(.btn-outline) {
+  height: 36px;
+  padding: 0 12px;
+  gap: 6px;
+  font-size: 13px;
+}
+.qrPop {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+  background: var(--bg-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+}
+.qrPop img {
+  border-radius: var(--r-1);
+}
+.qrLoading {
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  font-size: 13px;
+}

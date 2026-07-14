@@ -1,0 +1,149 @@
+.footer {
+  width: 100%;
+  background: var(--bg-1);
+  border-top: 1px solid var(--line);
+}
+.inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 72px 24px 40px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 56px 40px;
+  flex-wrap: wrap;
+}
+
+/* ---- brand lockup: big glyph + the CROWN wordmark wearing little crowns ---- */
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 380px;
+}
+
+.glyph {
+  display: block;
+  width: 56px;
+  height: 56px;
+  color: var(--accent); /* the footer's single purple spot */
+}
+
+.wordmark {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.letter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+/* the little crown sitting on top of each letter */
+.mini {
+  display: block;
+  width: 15px;
+  height: 15px;
+  color: var(--text-2);
+  transition: color var(--dur-2) var(--ease);
+}
+.char {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-1);
+}
+/* a small reward for looking closely: the crowns light up together on hover */
+.wordmark:hover .mini {
+  color: var(--accent);
+}
+
+.tagline {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-3);
+  max-width: 42ch;
+}
+
+/* ---- link columns ---- */
+.cols {
+  display: flex;
+  gap: 64px;
+  flex-wrap: wrap;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.colHead {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.col a {
+  font-size: 15px;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease);
+}
+.col a:hover {
+  color: var(--text-1);
+}
+.fact {
+  font-size: 15px;
+  color: var(--text-3);
+}
+
+/* ---- bottom bar ---- */
+.bar {
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.barLinks {
+  display: flex;
+  gap: 22px;
+}
+.barLinks a {
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease);
+}
+.barLinks a:hover {
+  color: var(--text-2);
+}
+
+@media (max-width: 680px) {
+  .inner {
+    padding-top: 56px;
+  }
+  .top {
+    flex-direction: column;
+    gap: 40px;
+  }
+  .cols {
+    gap: 40px;
+  }
+  .char {
+    font-size: 34px;
+  }
+  .glyph {
+    width: 48px;
+    height: 48px;
+  }
+}

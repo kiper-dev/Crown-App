@@ -1,0 +1,219 @@
+/* Interactive money-flow explainer — pick an amount, watch it travel
+   viewer → Crown's 3% → your wallet, with the figures settling live. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.title {
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  max-width: 20ch;
+}
+.dim {
+  color: var(--text-3);
+}
+
+/* amount picker */
+.picker {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  margin-top: 28px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+}
+.pick {
+  height: 40px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.pick:hover {
+  color: var(--text-1);
+}
+.pickOn {
+  background: var(--accent);
+  color: #0f0e14;
+}
+.pick:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-accent);
+}
+
+/* the flow itself */
+.flow {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  margin-top: 40px;
+}
+.node {
+  flex: 1 1 0;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 26px 22px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  text-align: left;
+}
+.nodeMuted {
+  opacity: 0.9;
+}
+.nodeHot {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, var(--accent-soft), transparent 70%), var(--bg-1);
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow-float);
+}
+.nodeTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  color: var(--text-1);
+  flex: none;
+}
+.nodeHot .badge {
+  background: var(--accent);
+  color: #0f0e14;
+}
+.value {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+.nodeHot .value {
+  color: var(--accent);
+}
+.nodeSub {
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+.rep {
+  color: #6bd39a;
+  font-weight: 600;
+}
+
+/* connectors between nodes */
+.connector {
+  position: relative;
+  flex: 0 0 56px;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2px;
+}
+.line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--line-strong), var(--accent), var(--line-strong));
+  border-radius: 2px;
+  opacity: 0.7;
+}
+.spark {
+  position: absolute;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: travel 1.8s var(--ease) infinite;
+}
+.head {
+  position: relative;
+  color: var(--accent);
+  font-size: 16px;
+  transform: translateX(2px);
+}
+@keyframes travel {
+  0% { left: 0; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+.foot {
+  margin-top: 28px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+/* stack vertically on narrow screens; arrows point down */
+@media (max-width: 760px) {
+  .flow {
+    flex-direction: column;
+    align-items: center;
+  }
+  .node {
+    width: 100%;
+    max-width: 340px;
+  }
+  .connector {
+    flex-basis: 44px;
+    width: 2px;
+    height: 44px;
+  }
+  .line {
+    background: linear-gradient(180deg, var(--line-strong), var(--accent), var(--line-strong));
+  }
+  .spark {
+    left: 50% !important;
+    transform: translateX(-50%);
+    animation: travelDown 1.8s var(--ease) infinite;
+  }
+  .head {
+    transform: rotate(90deg);
+  }
+  @keyframes travelDown {
+    0% { top: 0; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spark { display: none; }
+}

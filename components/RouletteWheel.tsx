@@ -1,0 +1,181 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import type { RouletteSuggestion } from "@/lib/data/roulette-mock";
+import styles from "./RouletteWheel.module.css";
+
+// On-charter wheel palette: neighbouring dark neutrals, no rainbow — the slice SIZE carries
+// the information (share of pot = odds), color only separates neighbours. Labels stay white.
+const FILLS = ["#26242F", "#2E2C3A", "#1D1C24", "#353244", "#232230"];
+
+interface Slice {
+  s: RouletteSuggestion;
+  start: number; // degrees from the pointer (top), clockwise
+  angle: number;
+}
+
+function computeSlices(round: RouletteSuggestion[]): { slices: Slice[]; total: number } {
+  const total = round.reduce((sum, r) => sum + r.pool, 0);
+  let acc = 0;
+  const slices = round.map((s) => {
+    const angle = total ? (s.pool / total) * 360 : 0;
+    const slice = { s, start: acc, angle };
+    acc += angle;
+    return slice;
+  });
+  return { slices, total };
+}
+
+// 0° = top (where the pointer sits), growing clockwise.
+function polar(r: number, deg: number): [number, number] {
+  const rad = ((deg - 90) * Math.PI) / 180;
+  return [100 + r * Math.cos(rad), 100 + r * Math.sin(rad)];
+}
+
+function slicePath(start: number, angle: number): string {
+  const [x1, y1] = polar(94, start);
+  const [x2, y2] = polar(94, start + angle);
+  const large = angle > 180 ? 1 : 0;
+  return `M100 100 L${x1.toFixed(2)} ${y1.toFixed(2)} A94 94 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+}
+
+function trunc(s: string): string {
+  return s.length > 13 ? `${s.slice(0, 12)}…` : s;
+}
+
+/**
+ * The wheel itself. Slices are proportional to each suggestion's pool — the wheel literally
+ * fills up as donations come in, and a slice's size IS its odds. Spinning: bump `spinNonce`
+ * with `spinToId` set — the wheel turns a few laps, lands on that suggestion (with a little
+ * jitter inside the slice) and calls `onLanded`. `winnerId` dims everyone else after landing.
+ */
+export function RouletteWheel({
+  round,
+  spinToId,
+  spinNonce = 0,
+  onLanded,
+  winnerId,
+  size = 320,
+  compact = false,
+  onSliceClick,
+}: {
+  round: RouletteSuggestion[];
+  spinToId?: string | null;
+  spinNonce?: number;
+  onLanded?: (id: string) => void;
+  winnerId?: string | null;
+  size?: number;
+  compact?: boolean;
+  onSliceClick?: (s: RouletteSuggestion) => void;
+}) {
+  const { slices, total } = computeSlices(round);
+  const [rotation, setRotation] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const handled = useRef(0);
+  const slicesRef = useRef(slices);
+  slicesRef.current = slices;
+
+  useEffect(() => {
+    if (!spinNonce || !spinToId || handled.current >= spinNonce) return;
+    const slice = slicesRef.current.find((x) => x.s.id === spinToId);
+    if (!slice) return;
+    handled.current = spinNonce;
+    // Land the slice's center under the pointer, with jitter so it doesn't look scripted.
+    const jitter = (Math.random() - 0.5) * slice.angle * 0.6;
+    const center = (slice.start + slice.angle / 2 + jitter + 360) % 360;
+    setRotation((r) => {
+      const current = ((r % 360) + 360) % 360;
+      const target = (360 - center) % 360;
+      const delta = (target - current + 360) % 360;
+      return r + 4 * 360 + delta;
+    });
+    setSpinning(true);
+    const t = setTimeout(() => {
+      setSpinning(false);
+      onLanded?.(spinToId);
+    }, 4400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinNonce, spinToId]);
+
+  // Opened with the verdict already decided (e.g. a reload after the round closed): park the
+  // winner under the pointer instantly — replaying the spin on every reload would be theater.
+  useEffect(() => {
+    if (!winnerId || handled.current > 0) return;
+    const slice = slicesRef.current.find((x) => x.s.id === winnerId);
+    if (!slice) return;
+    const center = (slice.start + slice.angle / 2) % 360;
+    setRotation((360 - center) % 360);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [winnerId]);
+
+  return (
+    <div className={styles.wrap} style={{ width: size, height: size }}>
+      <svg viewBox="0 0 200 200" className={styles.svg} aria-hidden>
+        <g
+          className={styles.wheel}
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transitionDuration: spinning ? "4.2s" : "0s",
+          }}
+        >
+          {total === 0 ? (
+            <circle cx="100" cy="100" r="94" className={styles.empty} />
+          ) : slices.length === 1 ? (
+            <circle
+              cx="100"
+              cy="100"
+              r="94"
+              fill={FILLS[0]}
+              stroke="#0F0E14"
+              strokeWidth="1"
+              className={onSliceClick ? styles.clickable : styles.slice}
+              onClick={onSliceClick ? () => onSliceClick(slices[0].s) : undefined}
+            />
+          ) : (
+            slices.map((sl, i) => (
+              <path
+                key={sl.s.id}
+                d={slicePath(sl.start, sl.angle)}
+                fill={FILLS[i % FILLS.length]}
+                stroke="#0F0E14"
+                strokeWidth="1"
+                className={`${onSliceClick ? styles.clickable : styles.slice}${winnerId && winnerId !== sl.s.id ? ` ${styles.dimmed}` : ""}`}
+                onClick={onSliceClick ? () => onSliceClick(sl.s) : undefined}
+              >
+                <title>{`${sl.s.title} — ${sl.s.pool} $ · ${Math.round((sl.angle / 360) * 100)}%`}</title>
+              </path>
+            ))
+          )}
+
+          {!compact &&
+            slices
+              // Radial labels need angular room only for the font's height — ~12° is safe.
+              .filter((sl) => sl.angle >= 12)
+              .map((sl) => {
+                const mid = sl.start + sl.angle / 2;
+                const [lx, ly] = polar(57, mid);
+                // Text runs along the radius (center → rim), so it can never poke past it;
+                // on the left half it flips so it doesn't stand on its head.
+                const rot = mid > 180 ? mid + 90 : mid - 90;
+                return (
+                  <text
+                    key={`t-${sl.s.id}`}
+                    x={lx}
+                    y={ly}
+                    className={styles.label}
+                    transform={`rotate(${rot.toFixed(2)}, ${lx.toFixed(2)}, ${ly.toFixed(2)})`}
+                  >
+                    {trunc(sl.s.title)}
+                  </text>
+                );
+              })}
+        </g>
+
+        <circle cx="100" cy="100" r="97" className={styles.rim} />
+        <circle cx="100" cy="100" r="8" className={styles.hub} />
+        <path d="M100 17 L94 3 L106 3 Z" className={styles.pointer} />
+      </svg>
+    </div>
+  );
+}

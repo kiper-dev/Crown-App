@@ -1,0 +1,76 @@
+/* "Live now" on the Home tab — compact cards for the games that are currently running
+   (an open roulette round, a collecting/delivering fundraiser, tasks in the queue). */
+.head {
+  font-size: 19px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+}
+.cardTitle {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-1);
+}
+.stat {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.stat b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.bar {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--r-pill);
+  transition: width var(--dur-2) var(--ease);
+}
+.pledge {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tlist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.titem {
+  font-size: 14px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spacer {
+  flex: 1;
+}

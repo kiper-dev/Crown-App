@@ -12,7 +12,7 @@ Parts: [I. Specification](#i-specification) · [II. Design](#ii-design) · [III.
 
 ## 1. Surfaces
 
-Nine routes. Each has one job. A new surface only appears via an explicit owner decision (like the `/games` catalog) or Part IV.
+Ten routes. Each has one job. A new surface only appears via an explicit owner decision (like the `/games` catalog) or Part IV.
 
 | Route | Job | Register |
 |---|---|---|
@@ -22,11 +22,14 @@ Nine routes. Each has one job. A new surface only appears via an explicit owner 
 | `/space` | cabinet: viewer + streamer, sidebar | strict |
 | `/create` | page-creation wizard, 4 steps, no sidebar | strict |
 | `/games` | platform mini-games catalog: a showcase — what exists and what's coming. You play a game on the page of the streamer who enabled it | strict |
+| `/discover` | streamer directory: search, sort (all-time/7 days), platform filters, a card grid with a mini-chart and top-donor per streamer. Reached via "Find a streamer" in the top nav — not a default landing surface | mixed |
 | `/overlay/<handle>/<widget>` | bare pages for OBS: alerts, goal, top donors | viewer-facing |
 | 404 | "no such streamer, check the link" — anti-phishing, its own style | strict |
 | legal | terms, privacy. Written last | strict |
 
 **`/games` is a catalog of game types, not a way to manage them.** A list of everything that exists on the platform (data — `lib/data/games.ts`, `GAMES`); the UI iterates the registry instead of hardcoding games. Managing a specific game for a streamer (enable it, create a round, get the link) lives in the cabinet `/space → Games` (§6) and on the campaign page `/@handle/<slug>` (§5). No game is built yet — all are "Soon" (an honest disabled state, not a fake placeholder).
+
+**`/discover` is a v2 rebuild of a pre-charter "realm directory" concept.** The old version used per-user accent colors and "crowned"/"the crown" wording — both retired (§7 Glossary: one purple accent only, no gold). The rebuild keeps the shape (search, sort, platform filters, sparkline, top donor) but renames the copy ("received", "top donor") and drops per-card color. Data comes from `MOCK_REALMS`/`MOCK_STREAMERS` (`lib/data/mock.ts`) — no new backend surface.
 
 **The `/` landing page speaks to one person — the streamer.** Viewers don't visit the homepage; they arrive via a direct link. The landing page's pillars: money arrives straight in your wallet (payouts don't exist) · 3% and that's it · you don't need to trust us — it's all open, verify it · create a page in a minute.
 
@@ -39,7 +42,7 @@ Mode is a property of the **data type**, not the app. `DataProvider` serves each
 | donation, escrow | contracts, via a transaction from the user's wallet | `chain` |
 | reputation | crown-index canister, query | `icp` |
 | donation feed | `Settled` events via RPC | `chain` |
-| profiles, handle→address, levels, campaigns, donation messages and names | nowhere to store them yet | `mock` → `api` |
+| profiles, handle→address, tiers, campaigns, donation messages and names | nowhere to store them yet | `mock` → `api` |
 
 Migration rule: `mock` switches to `api` **per data type**; the provider's interface doesn't move. Components don't know where the data came from.
 
@@ -109,25 +112,26 @@ Sidebar — flat items. A nested submenu is a sign of an overloaded section; it'
 ```
 Home         donation chart, total for the period, recent donations
 Donations    full feed: who, how much, message
-Viewers      top by reputation, levels
 Games        per-game: build/configure, link, active/completed
 Widgets      OBS overlays: alerts, goal, top donors
 Settings     profile, socials, wallet
 ```
 
+No `Viewers` section — not part of this product. A viewer's reputation and tier already show on the streamer's own public page (§4); the cabinet doesn't need a second, platform-side view of it.
+
 Top bar: logo · avatar + name · "My page" (opens the public page, through a viewer's eyes). **There's no balance in the top bar and there won't be** — nothing to show, the money is the streamer's.
 
 **The form builder lives inside a game — currently "Task for donation"** (pulled forward from IV's deferred "page and widget customization" — live streamer requests arrived earlier than expected). It's the streamer's tool for that game: build the form viewers fill in, then share the link + QR (both sit above the editor); viewers open a separate page and act there — the builder never takes money. Two inner tabs: **My page** (avatar/description on-off toggles, an ordered list of widgets — donate form, social icons — each with its own on-off toggle and reorder) and **Design** (a gallery of ready-made **themes** for one-click looks, plus manual background: color / gradient / image). No accent-color theme picker — the donate button and every interactive element stay Crown purple everywhere, per §II.1's one-accent rule; themes differ by backdrop only. A live preview with a **Phone/Desktop** toggle sits beside the editor so the streamer checks both before sharing.
 
-`/create` wizard: profile (name + `@handle`, link preview) → socials (official domains only, ≤5) → wallet → levels. One mandatory step — wallet; default is "use the connected wallet," manual entry is a secondary option with a warning: money will go straight there and only there. Levels are skippable (default $10/100/1000). Minimum to get your own page: name + wallet, under a minute.
+`/create` wizard: profile (name + `@handle`, link preview) → socials (official domains only, ≤5) → wallet → tiers. One mandatory step — wallet; default is "use the connected wallet," manual entry is a secondary option with a warning: money will go straight there and only there. Tiers are skippable (default $10/100/1000). Minimum to get your own page: name + wallet, under a minute.
 
 Socials go through normalization: a link is only accepted from a platform's official domain. Phishing disguised as YouTube isn't saved — validation happens on input, not on display.
 
 ## 7. Glossary
 
-The old terminology (Realm, Reign, Crowning, "to crown," tiers) is retired. There's no new one yet. Until there is:
+The old terminology (Realm, Reign, Crowning, "to crown") is retired. "Tiers" is adopted and stays. Until a full brand vocabulary exists:
 
-- in the UI — plain words: streamer page, donation, reputation, levels, campaign;
+- in the UI — plain words: streamer page, donation, reputation, tiers, campaign;
 - in code — neutral names: `StreamerPage`, `Reputation`, `DonateForm`, `Campaign`. Brand words, once they exist, get swapped in via a string dictionary, not a refactor;
 - easter eggs — in game and section names (candidate: "Messages from the Stars" for alerts), never in buttons and hints.
 

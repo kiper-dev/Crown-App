@@ -2,19 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { CopyIcon, QrIcon, DragHandleIcon, UploadIcon } from "@/components/icons";
-import { PagePreview } from "@/components/PagePreview";
+import { QrIcon, CopyIcon, PhoneIcon, DesktopIcon, DragHandleIcon, UploadIcon, ChevronDown, SocialIcon, SOCIAL_LABEL, SOCIAL_KINDS, SOCIAL_BRAND } from "@/components/icons";
+import { LivePreview } from "@/components/LivePreview";
 import {
   BIO_MAX,
+  TASK_MAX,
   WIDGET_LABEL,
   BACKGROUND_COLOR_PRESETS,
   BACKGROUND_GRADIENT_PRESETS,
   THEMES,
+  MAX_DONATE_PRESETS,
   backgroundStyle,
   sameBackground,
   withPageDefaults,
 } from "@/lib/data/pagebuilder";
-import type { PageWidget, Profile } from "@/lib/data/types";
+import type { PageWidget, Profile, Social } from "@/lib/data/types";
 import styles from "./PageBuilder.module.css";
 
 type Tab = "page" | "design";
@@ -27,14 +29,19 @@ export function PageBuilder({ profile, onSave }: { profile: Profile; onSave: (p:
   const [copied, setCopied] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [openWidget, setOpenWidget] = useState<PageWidget["kind"] | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const bgFileRef = useRef<HTMLInputElement>(null);
 
-  const link = `crown.tv/@${p.handle}`;
+  // Real, working URL on whatever host the app runs on (localhost in dev, the real domain in prod) —
+  // not a hardcoded "crown.tv". Resolved after mount to avoid an SSR/client hydration mismatch.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const link = `${origin || "https://crown.tv"}/@${p.handle}`;
 
   useEffect(() => {
     if (!qrOpen) return;
-    QRCode.toDataURL(`https://${link}`, { margin: 1, width: 240, color: { dark: "#F1EFF7", light: "#00000000" } })
+    QRCode.toDataURL(link, { margin: 1, width: 240, color: { dark: "#F1EFF7", light: "#00000000" } })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(""));
   }, [qrOpen, link]);
@@ -45,6 +52,38 @@ export function PageBuilder({ profile, onSave }: { profile: Profile; onSave: (p:
 
   function patchWidget(kind: PageWidget["kind"], next: Partial<PageWidget>) {
     patch({ widgets: p.widgets.map((w) => (w.kind === kind ? { ...w, ...next } : w)) });
+  }
+
+  function toggleWidgetConfig(kind: PageWidget["kind"]) {
+    setOpenWidget((k) => (k === kind ? null : kind));
+  }
+
+  function addSocial() {
+    patch({ socials: [...p.socials, { kind: "twitch", url: "" }] });
+  }
+
+  function updateSocial(i: number, next: Partial<Social>) {
+    patch({ socials: p.socials.map((s, j) => (j === i ? { ...s, ...next } : s)) });
+  }
+
+  function removeSocial(i: number) {
+    patch({ socials: p.socials.filter((_, j) => j !== i) });
+  }
+
+  function updatePreset(i: number, value: number) {
+    const next = p.donatePresets.slice();
+    next[i] = Math.max(1, Math.round(value) || 1);
+    patch({ donatePresets: next });
+  }
+
+  function addPreset() {
+    const last = p.donatePresets[p.donatePresets.length - 1] ?? 5;
+    patch({ donatePresets: [...p.donatePresets, last + 5] });
+  }
+
+  function removePreset(i: number) {
+    if (p.donatePresets.length <= 1) return;
+    patch({ donatePresets: p.donatePresets.filter((_, j) => j !== i) });
   }
 
   function moveWidget(index: number, dir: -1 | 1) {
@@ -73,7 +112,7 @@ export function PageBuilder({ profile, onSave }: { profile: Profile; onSave: (p:
 
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(`https://${link}`);
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {}
@@ -81,33 +120,6 @@ export function PageBuilder({ profile, onSave }: { profile: Profile; onSave: (p:
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.linkRow}>
-        <div className={styles.linkLabel}>Your link</div>
-        <div className={styles.linkChip}>
-          <span className="num">{link}</span>
-        </div>
-        <button type="button" className="btn-outline" onClick={copyLink}>
-          <CopyIcon /> {copied ? "Copied" : "Copy"}
-        </button>
-        <button type="button" className="btn-outline" onClick={() => setQrOpen((v) => !v)}>
-          <QrIcon /> QR code
-        </button>
-        {qrOpen && (
-          <div className={styles.qrPop} role="dialog" aria-label="QR code">
-            {qrDataUrl ? (
-              <>
-                <img src={qrDataUrl} alt={`QR code for ${link}`} width={200} height={200} />
-                <a className={styles.qrDownload} href={qrDataUrl} download="crown-qr.png">
-                  Download PNG
-                </a>
-              </>
-            ) : (
-              <div className={styles.qrLoading}>Generating…</div>
-            )}
-          </div>
-        )}
-      </div>
-
       <div className={styles.builder}>
         <div className={styles.editor}>
           <div className={styles.tabs} role="tablist" aria-label="Page builder">
@@ -140,43 +152,142 @@ export function PageBuilder({ profile, onSave }: { profile: Profile; onSave: (p:
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className={styles.bioField}>
                   <label className={`toggle${p.bioEnabled ? " on" : ""}`}>
                     <span className="track"><span className="knob" /></span>
                     <input type="checkbox" hidden checked={p.bioEnabled} onChange={(e) => patch({ bioEnabled: e.target.checked })} />
                     Description
                   </label>
-                  <textarea
-                    rows={2}
-                    maxLength={BIO_MAX}
-                    placeholder="Give for…"
-                    value={p.bio}
-                    onChange={(e) => patch({ bio: e.target.value })}
-                  />
-                  <div className={styles.charCount}>{p.bio.length}/{BIO_MAX} characters</div>
+                  <div className={styles.bioBox}>
+                    <textarea
+                      className={styles.bioInput}
+                      rows={2}
+                      maxLength={BIO_MAX}
+                      placeholder="Give for…"
+                      value={p.bio}
+                      onChange={(e) => patch({ bio: e.target.value })}
+                    />
+                    <span className={styles.charCount}>{p.bio.length}/{BIO_MAX}</span>
+                  </div>
+                </div>
+
+                <div className={styles.bioField}>
+                  <div className={styles.rowHead}>Task</div>
+                  <div className={styles.bioBox}>
+                    <textarea
+                      className={styles.bioInput}
+                      rows={2}
+                      maxLength={TASK_MAX}
+                      placeholder="What should the viewer do?"
+                      value={p.task}
+                      onChange={(e) => patch({ task: e.target.value })}
+                    />
+                    <span className={styles.charCount}>{p.task.length}/{TASK_MAX}</span>
+                  </div>
                 </div>
               </div>
 
-              <button type="button" className={`btn ${styles.addWidgetBtn}`} disabled title="More widgets are on the way">
-                + Add widget
-              </button>
-              <div className="footnote">More widgets are on the way — donate form and social icons ship today.</div>
+              <div className={styles.rowHead}>Widgets</div>
 
               <div className={styles.widgetList}>
-                {p.widgets.map((w, i) => (
-                  <div key={w.kind} className={styles.widgetRow}>
-                    <DragHandleIcon className={styles.dragHandle} />
-                    <div className={styles.widgetStepper}>
-                      <button type="button" aria-label="Move up" disabled={i === 0} onClick={() => moveWidget(i, -1)}>▲</button>
-                      <button type="button" aria-label="Move down" disabled={i === p.widgets.length - 1} onClick={() => moveWidget(i, 1)}>▼</button>
+                {p.widgets.map((w, i) => {
+                  const open = openWidget === w.kind;
+                  return (
+                    <div key={w.kind} className={styles.widgetGroup}>
+                      <div className={`${styles.widgetRow}${w.enabled ? "" : ` ${styles.widgetOff}`}`}>
+                        <DragHandleIcon className={styles.dragHandle} />
+                        <div className={styles.widgetStepper}>
+                          <button type="button" aria-label="Move up" disabled={i === 0} onClick={() => moveWidget(i, -1)}>▲</button>
+                          <button type="button" aria-label="Move down" disabled={i === p.widgets.length - 1} onClick={() => moveWidget(i, 1)}>▼</button>
+                        </div>
+                        <button type="button" className={styles.widgetNameBtn} aria-expanded={open} onClick={() => toggleWidgetConfig(w.kind)}>
+                          {WIDGET_LABEL[w.kind]}
+                          <ChevronDown className={`${styles.widgetChev}${open ? ` ${styles.widgetChevOn}` : ""}`} />
+                        </button>
+                        <label className={`toggle${w.enabled ? " on" : ""}`}>
+                          <span className="track"><span className="knob" /></span>
+                          <input type="checkbox" hidden checked={w.enabled} onChange={(e) => patchWidget(w.kind, { enabled: e.target.checked })} />
+                        </label>
+                      </div>
+
+                      {open && w.kind === "donate" && (
+                        <div className={styles.widgetConfig}>
+                          <div className={styles.presetRow}>
+                            {p.donatePresets.map((amount, pi) => (
+                              <div className={styles.presetChip} key={pi}>
+                                <span className={styles.presetDollar}>$</span>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  aria-label={`Amount ${pi + 1}`}
+                                  value={amount}
+                                  onChange={(e) => updatePreset(pi, +e.target.value)}
+                                />
+                                {p.donatePresets.length > 1 && (
+                                  <button
+                                    type="button"
+                                    className={styles.presetRemove}
+                                    aria-label={`Remove amount ${pi + 1}`}
+                                    onClick={() => removePreset(pi)}
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {p.donatePresets.length < MAX_DONATE_PRESETS && (
+                              <button type="button" className={styles.presetAdd} aria-label="Add amount" onClick={addPreset}>
+                                +
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {open && w.kind === "socials" && (
+                        <div className={styles.widgetConfig}>
+                          {p.socials.map((s, si) => (
+                            <div className="social-row" key={si}>
+                              <span className="ic" style={{ background: SOCIAL_BRAND[s.kind].bg, color: SOCIAL_BRAND[s.kind].fg }}>
+                                <SocialIcon kind={s.kind} />
+                              </span>
+                              <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: 10 }}>
+                                <select
+                                  className="chip"
+                                  style={{ height: 48, padding: "0 12px", borderRadius: "var(--r-2)", background: "var(--bg-0)" }}
+                                  value={s.kind}
+                                  onChange={(e) => updateSocial(si, { kind: e.target.value as Social["kind"] })}
+                                >
+                                  {SOCIAL_KINDS.map((k) => (
+                                    <option key={k} value={k}>
+                                      {SOCIAL_LABEL[k]}
+                                    </option>
+                                  ))}
+                                </select>
+                                <div className="field">
+                                  <input
+                                    type="text"
+                                    placeholder={`${s.kind}.com/…`}
+                                    value={s.url}
+                                    onChange={(e) => updateSocial(si, { url: e.target.value })}
+                                  />
+                                </div>
+                              </div>
+                              <button className="rm" type="button" aria-label="Remove" onClick={() => removeSocial(si)}>
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                          {p.socials.length < SOCIAL_KINDS.length && (
+                            <button className="btn-outline" type="button" style={{ alignSelf: "flex-start" }} onClick={addSocial}>
+                              + Add link
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <span className={styles.widgetName}>{WIDGET_LABEL[w.kind]}</span>
-                    <label className={`toggle${w.enabled ? " on" : ""}`}>
-                      <span className="track"><span className="knob" /></span>
-                      <input type="checkbox" hidden checked={w.enabled} onChange={(e) => patchWidget(w.kind, { enabled: e.target.checked })} />
-                    </label>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -276,13 +387,41 @@ export function PageBuilder({ profile, onSave }: { profile: Profile; onSave: (p:
         <div className={styles.previewCol}>
           <div className={styles.deviceSeg} role="group" aria-label="Preview device">
             <button type="button" className={device === "phone" ? styles.deviceOn : ""} onClick={() => setDevice("phone")}>
-              Phone
+              <PhoneIcon /> Phone
             </button>
             <button type="button" className={device === "desktop" ? styles.deviceOn : ""} onClick={() => setDevice("desktop")}>
-              Desktop
+              <DesktopIcon /> Desktop
             </button>
           </div>
-          <PagePreview profile={p} device={device} />
+          <LivePreview src={`/@${p.handle}`} device={device} />
+
+          <div className={styles.linkRow}>
+            <div className={styles.linkLabel}>Your link</div>
+            <a className={styles.linkChip} href={`/@${p.handle}`} target="_blank" rel="noreferrer">
+              <span className="num">{link}</span>
+            </a>
+            {/* href stays a relative /@handle so it works regardless of host; the text shows the full URL */}
+            <button type="button" className="btn-outline" onClick={copyLink} aria-label="Copy link">
+              <CopyIcon /> {copied ? "Copied!" : "Copy"}
+            </button>
+            <button type="button" className="btn-outline" onClick={() => setQrOpen((v) => !v)}>
+              <QrIcon /> QR code
+            </button>
+            {qrOpen && (
+              <div className={styles.qrPop} role="dialog" aria-label="QR code">
+                {qrDataUrl ? (
+                  <>
+                    <img src={qrDataUrl} alt={`QR code for ${link}`} width={200} height={200} />
+                    <a className={styles.qrDownload} href={qrDataUrl} download="crown-qr.png">
+                      Download PNG
+                    </a>
+                  </>
+                ) : (
+                  <div className={styles.qrLoading}>Generating…</div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

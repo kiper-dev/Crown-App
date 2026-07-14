@@ -28,6 +28,22 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setReady(true);
   }, []);
 
+  // Re-read when another document on this origin writes the profile. The `storage` event fires
+  // in every same-origin document EXCEPT the one that made the change — so when the cabinet's
+  // page builder saves, its live iframe preview (a separate document) picks the edit up here and
+  // re-renders. Also keeps two open tabs of the app in sync.
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key !== null && e.key !== KEY) return;
+      try {
+        const raw = localStorage.getItem(KEY);
+        setProfile(raw ? JSON.parse(raw) : null);
+      } catch {}
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const save = useCallback((p: Profile) => {
     setProfile(p);
     try {

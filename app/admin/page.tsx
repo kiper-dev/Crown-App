@@ -2,21 +2,36 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CrownMark, SocialIcon, NavIcon } from "@/components/icons";
-import { StatTile, BarList, MiniArea, MiniBars, StatusPill, money, shortMoney } from "@/components/ops";
+import { CrownMark, SocialIcon, GameIcon, NavIcon, SearchIcon } from "@/components/icons";
+import { BarsIcon, LineIcon } from "@/components/Chart";
+import { StatTile, BarList, GrowthChart, StatusPill, SortHeader, money, shortMoney, axisTicks } from "@/components/ops";
 import { useCrown } from "@/lib/data/DataProvider";
+import { GAMES, type GameId } from "@/lib/data/games";
 import {
-  OPS_STATS, OPS_GROWTH, OPS_BY_PLATFORM, OPS_BY_SIZE, OPS_GAME_ADOPTION, OPS_TASK_STATUS,
-  OPS_STREAMERS, OPS_TASKS, OPS_VIEWERS, TASK_STATUS_META, PENALTY_LADDER, APPLY_ACTIONS,
+  OPS_STATS, OPS_GROWTH, OPS_GROWTH_BY_PLATFORM, OPS_GROWTH_BY_GAME, OPS_BY_PLATFORM, OPS_BY_SIZE, OPS_GAME_ADOPTION,
+  OPS_TASK_STATUS, OPS_STREAMERS, OPS_TASKS, OPS_DONATORS, TASK_STATUS_META, PENALTY_LADDER, APPLY_ACTIONS,
   type TaskStatus,
 } from "@/lib/data/ops-mock";
 
-type Section = "overview" | "streamers" | "viewers" | "tasks" | "moderation" | "settings";
-const NAV: { key: Section; label: string; icon: Parameters<typeof NavIcon>[0]["name"] }[] = [
-  { key: "overview", label: "Overview", icon: "home" },
-  { key: "streamers", label: "Streamers", icon: "viewers" },
-  { key: "viewers", label: "Viewers", icon: "viewers" },
-  { key: "tasks", label: "Tasks", icon: "games" },
+// Local: the shared NavIcon no longer has a "people" case (space/page.tsx dropped it).
+// Kept here instead of re-widening the shared component's type for one admin-only glyph.
+function PeopleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.8 19c0-2.9 2.3-5.2 5.2-5.2s5.2 2.3 5.2 5.2" />
+      <path d="M15.4 5.2a3.2 3.2 0 0 1 0 5.6" />
+      <path d="M16.6 13.9c2.1.6 3.6 2.7 3.6 5.1" />
+    </svg>
+  );
+}
+
+type Section = "overview" | "streamers" | "donators" | "tasks" | "moderation" | "settings";
+const NAV: { key: Section; label: string; icon: () => React.JSX.Element }[] = [
+  { key: "overview", label: "Overview", icon: () => <NavIcon name="home" /> },
+  { key: "streamers", label: "Streamers", icon: PeopleIcon },
+  { key: "donators", label: "Donators", icon: PeopleIcon },
+  { key: "tasks", label: "Tasks", icon: () => <NavIcon name="games" /> },
 ];
 const RANGES = [
   { key: "1d", label: "1D", n: 2 },
@@ -29,8 +44,8 @@ export default function OpsPage() {
   const [section, setSection] = useState<Section>("overview");
 
   return (
-    <main className="ops">
-      <nav className="ops-nav" aria-label="Admin panel sections">
+    <main className="admin-page">
+      <nav className="admin-nav" aria-label="Admin panel sections">
         <div className="brand">
           <Link className="logo" href="/" aria-label="Go to homepage">
             <CrownMark />
@@ -41,27 +56,27 @@ export default function OpsPage() {
           <span className="tag">admin panel</span>
         </div>
         {NAV.map((n) => (
-          <button key={n.key} type="button" className={`ops-item${section === n.key ? " active" : ""}`} onClick={() => setSection(n.key)}>
-            <NavIcon name={n.icon} />
+          <button key={n.key} type="button" className={`admin-item${section === n.key ? " active" : ""}`} onClick={() => setSection(n.key)}>
+            <n.icon />
             {n.label}
           </button>
         ))}
-        <div className="ops-divider" />
-        <button type="button" className={`ops-item${section === "moderation" ? " active" : ""}`} onClick={() => setSection("moderation")}>
+        <div className="admin-divider" />
+        <button type="button" className={`admin-item${section === "moderation" ? " active" : ""}`} onClick={() => setSection("moderation")}>
           <NavIcon name="settings" />
           Moderation
         </button>
-        <div className="ops-divider" />
-        <button type="button" className={`ops-item${section === "settings" ? " active" : ""}`} onClick={() => setSection("settings")}>
+        <div className="admin-divider" />
+        <button type="button" className={`admin-item${section === "settings" ? " active" : ""}`} onClick={() => setSection("settings")}>
           <NavIcon name="widgets" />
           Settings
         </button>
       </nav>
 
-      <div className="ops-main">
+      <div className="admin-main">
         {section === "overview" && <Overview />}
         {section === "streamers" && <Streamers />}
-        {section === "viewers" && <Viewers />}
+        {section === "donators" && <Donators />}
         {section === "tasks" && <Tasks />}
         {section === "moderation" && <Moderation />}
         {section === "settings" && <Settings />}
@@ -70,16 +85,33 @@ export default function OpsPage() {
   );
 }
 
+const METRICS = [
+  { key: "gross", label: "Overall" },
+  { key: "net", label: "Net profit" },
+  { key: "platform", label: "By platform" },
+  { key: "game", label: "By games" },
+] as const;
+type Metric = (typeof METRICS)[number]["key"];
+
 function Overview() {
   const [range, setRange] = useState("all");
+  const [metric, setMetric] = useState<Metric>("gross");
+  const [platform, setPlatform] = useState(OPS_BY_PLATFORM[0].kind);
+  const [game, setGame] = useState<GameId>(GAMES[0].id);
+  const [view, setView] = useState<"bars" | "line">("bars");
   const n = RANGES.find((r) => r.key === range)?.n ?? 999;
-  const rec = OPS_GROWTH.received.slice(-n);
-  const vw = OPS_GROWTH.viewers.slice(-n);
+  const dates = OPS_GROWTH.dates.slice(-n);
+  const gross = OPS_GROWTH.received.slice(-n);
+  const rec =
+    metric === "gross" ? gross
+    : metric === "net" ? gross.map((v) => v * 0.03) // platform's 3% fee on every donation
+    : metric === "platform" ? OPS_GROWTH_BY_PLATFORM[platform].slice(-n)
+    : OPS_GROWTH_BY_GAME[game].slice(-n);
   const s = OPS_STATS;
 
   return (
     <>
-      <div className="ops-head">
+      <div className="admin-head">
         <div>
           <h1>Overview</h1>
           <div className="sub">The whole platform, across all streamers.</div>
@@ -91,10 +123,8 @@ function Overview() {
         <StatTile k="Total received" v={money(s.received)} />
         <StatTile k="Last 7 days" v={money(s.last7d)} />
         <StatTile k="Fee" v={money(s.fee)} s="3% of volume" />
-        <StatTile k="Viewers" v={String(s.viewers)} s="unique" />
         <StatTile k="Average per streamer" v={money(s.avgPerStreamer)} />
         <StatTile k="Largest" v={money(s.largest)} />
-        <StatTile k="Live" v={String(s.streamersLive)} s={`of ${s.streamers}`} />
       </div>
 
       <div className="panel">
@@ -103,25 +133,76 @@ function Overview() {
             <h2>Growth</h2>
             <div className="ph-sub">Cumulative · before launch — 0</div>
           </div>
-          <div className="seg" role="group" aria-label="Period">
-            {RANGES.map((r) => (
-              <button key={r.key} type="button" className={range === r.key ? "active" : ""} onClick={() => setRange(r.key)}>
-                {r.label}
+        </div>
+
+        <div className="growth-controls">
+          <div className="seg" role="group" aria-label="Metric">
+            {METRICS.map((m) => (
+              <button key={m.key} type="button" className={metric === m.key ? "active" : ""} onClick={() => setMetric(m.key)}>
+                {m.label}
               </button>
             ))}
           </div>
+          <div className="right">
+            <div className="seg" role="group" aria-label="Chart type">
+              <button
+                type="button"
+                className={view === "bars" ? "active" : ""}
+                onClick={() => setView("bars")}
+                aria-label="Bars"
+                title="Bars"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <BarsIcon />
+              </button>
+              <button
+                type="button"
+                className={view === "line" ? "active" : ""}
+                onClick={() => setView("line")}
+                aria-label="Line"
+                title="Line"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <LineIcon />
+              </button>
+            </div>
+            <div className="seg" role="group" aria-label="Period">
+              {RANGES.map((r) => (
+                <button key={r.key} type="button" className={range === r.key ? "active" : ""} onClick={() => setRange(r.key)}>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="growth-two">
-          <div className="growth-col">
-            <div className="gt">Total received</div>
-            <div className="gv num">{money(s.received)}</div>
-            <MiniArea data={rec} />
+
+        {metric === "platform" && (
+          <div className="growth-picker">
+            {OPS_BY_PLATFORM.map((p) => (
+              <button key={p.kind} type="button" className={`chip${platform === p.kind ? " active" : ""}`} onClick={() => setPlatform(p.kind)}>
+                <SocialIcon kind={p.kind} width={16} height={16} />
+                {p.label}
+              </button>
+            ))}
           </div>
-          <div className="growth-col">
-            <div className="gt">Viewers</div>
-            <div className="gv num">{s.viewers}</div>
-            <MiniBars data={vw} />
+        )}
+        {metric === "game" && (
+          <div className="growth-picker">
+            {GAMES.map((g) => (
+              <button key={g.id} type="button" className={`chip${game === g.id ? " active" : ""}`} onClick={() => setGame(g.id)}>
+                <GameIcon id={g.id} width={16} height={16} />
+                {g.title}
+              </button>
+            ))}
           </div>
+        )}
+
+        <div className="gv num">{money(rec[rec.length - 1] ?? 0)}</div>
+        <GrowthChart data={rec} labels={dates} format={money} view={view} />
+        <div className="mini-axis num">
+          {axisTicks(dates).map((d, i) => (
+            <span key={i}>{d}</span>
+          ))}
         </div>
       </div>
 
@@ -168,7 +249,7 @@ function Overview() {
           <div className="panel-head">
             <div>
               <h2>Tasks by status</h2>
-              <div className="ph-sub">1 paid out to streamer · 1 refunded to viewer</div>
+              <div className="ph-sub">1 paid out to streamer · 1 refunded to donator</div>
             </div>
           </div>
           <div className="barlist">
@@ -185,18 +266,54 @@ function Overview() {
   );
 }
 
+type StreamerSortKey = "name" | "socials" | "received" | "d7" | "donators";
+
 function Streamers() {
+  const [sortKey, setSortKey] = useState<StreamerSortKey>("received");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [q, setQ] = useState("");
+
+  function toggleSort(key: StreamerSortKey) {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+
+  const rows = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const filtered = needle
+      ? OPS_STREAMERS.filter((r) => r.handle.toLowerCase().includes(needle) || r.name.toLowerCase().includes(needle))
+      : OPS_STREAMERS;
+    const sign = sortDir === "asc" ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      switch (sortKey) {
+        case "name":
+          return sign * a.handle.localeCompare(b.handle);
+        case "socials":
+          return sign * (a.socials.length - b.socials.length);
+        case "received":
+          return sign * (a.received - b.received);
+        case "d7":
+          return sign * (a.d7 - b.d7);
+        case "donators":
+          return sign * (a.donators - b.donators);
+      }
+    });
+  }, [sortKey, sortDir, q]);
+
   return (
     <>
-      <div className="ops-head">
+      <div className="admin-head">
         <div>
           <h1>Streamers</h1>
-          <div className="sub">{OPS_STREAMERS.length} of {OPS_STATS.streamers}</div>
+          <div className="sub">{rows.length} of {OPS_STATS.streamers}</div>
         </div>
-        <div className="ops-controls">
-          <div className="seg">
-            <button type="button" className="active">All time</button>
-            <button type="button">7 days</button>
+        <div className="admin-controls">
+          <div className="search-field">
+            <SearchIcon width={16} height={16} />
+            <input type="text" placeholder="Find a streamer…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Find a streamer" />
           </div>
         </div>
       </div>
@@ -207,16 +324,15 @@ function Streamers() {
             <thead>
               <tr>
                 <th className="rank">#</th>
-                <th>Streamer</th>
-                <th>Socials</th>
-                <th className="r">Received</th>
-                <th className="r">7 days</th>
-                <th className="r">Viewers</th>
-                <th>Status</th>
+                <SortHeader label="Streamer" active={sortKey === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
+                <SortHeader label="Socials" active={sortKey === "socials"} dir={sortDir} onClick={() => toggleSort("socials")} />
+                <SortHeader label="Received" align="r" active={sortKey === "received"} dir={sortDir} onClick={() => toggleSort("received")} />
+                <SortHeader label="7 days" align="r" active={sortKey === "d7"} dir={sortDir} onClick={() => toggleSort("d7")} />
+                <SortHeader label="Donators" align="r" active={sortKey === "donators"} dir={sortDir} onClick={() => toggleSort("donators")} />
               </tr>
             </thead>
             <tbody>
-              {OPS_STREAMERS.map((r, i) => (
+              {rows.map((r, i) => (
                 <tr key={r.handle}>
                   <td className="rank num">{i + 1}</td>
                   <td>
@@ -234,10 +350,16 @@ function Streamers() {
                   </td>
                   <td className="r money num">{money(r.received)}</td>
                   <td className="r num" style={{ color: "var(--text-2)" }}>{money(r.d7)}</td>
-                  <td className="r num">{r.viewers}</td>
-                  <td>{r.live ? <span className="live"><span className="dot" />live</span> : <span style={{ color: "var(--text-3)" }}>active</span>}</td>
+                  <td className="r num">{r.donators}</td>
                 </tr>
               ))}
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: "center", padding: "40px 16px", color: "var(--text-3)" }}>
+                    No streamer matches "{q}".
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -246,12 +368,58 @@ function Streamers() {
   );
 }
 
-function Viewers() {
+type DonatorSortKey = "wallet" | "donated" | "reputation" | "streamers" | "activity";
+
+// "Activity" only has a human string ("34 min ago") — approximate it to minutes-ago so the
+// column can still sort by recency, without pretending the mock data has a real timestamp.
+function recencyMinutes(s: string): number {
+  const min = s.match(/(\d+)\s*min/);
+  if (min) return +min[1];
+  const hr = s.match(/(\d+)\s*hour/);
+  if (hr) return +hr[1] * 60;
+  if (/today/.test(s)) return 60 * 20;
+  if (/yesterday/.test(s)) return 60 * 30;
+  const day = s.match(/(\d+)\s*day/);
+  if (day) return +day[1] * 60 * 24;
+  return Number.MAX_SAFE_INTEGER;
+}
+
+function Donators() {
+  const [sortKey, setSortKey] = useState<DonatorSortKey>("donated");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  function toggleSort(key: DonatorSortKey) {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+
+  const rows = useMemo(() => {
+    const sign = sortDir === "asc" ? 1 : -1;
+    return [...OPS_DONATORS].sort((a, b) => {
+      switch (sortKey) {
+        case "wallet":
+          return sign * a.addr.localeCompare(b.addr);
+        case "donated":
+          return sign * (a.donated - b.donated);
+        case "reputation":
+          return sign * (a.reputation - b.reputation);
+        case "streamers":
+          return sign * (a.streamers - b.streamers);
+        case "activity":
+          // most-recent-first is the natural "descending" for a recency column, so flip the sign
+          return -sign * (recencyMinutes(a.last) - recencyMinutes(b.last));
+      }
+    });
+  }, [sortKey, sortDir]);
+
   return (
     <>
-      <div className="ops-head">
+      <div className="admin-head">
         <div>
-          <h1>Viewers</h1>
+          <h1>Donators</h1>
           <div className="sub">Top by reputation on the platform</div>
         </div>
       </div>
@@ -261,15 +429,15 @@ function Viewers() {
             <thead>
               <tr>
                 <th className="rank">#</th>
-                <th>Wallet</th>
-                <th className="r">Donated</th>
-                <th className="r">Reputation</th>
-                <th className="r">Streamers</th>
-                <th className="r">Activity</th>
+                <SortHeader label="Wallet" active={sortKey === "wallet"} dir={sortDir} onClick={() => toggleSort("wallet")} />
+                <SortHeader label="Donated" align="r" active={sortKey === "donated"} dir={sortDir} onClick={() => toggleSort("donated")} />
+                <SortHeader label="Reputation" align="r" active={sortKey === "reputation"} dir={sortDir} onClick={() => toggleSort("reputation")} />
+                <SortHeader label="Streamers" align="r" active={sortKey === "streamers"} dir={sortDir} onClick={() => toggleSort("streamers")} />
+                <SortHeader label="Activity" align="r" active={sortKey === "activity"} dir={sortDir} onClick={() => toggleSort("activity")} />
               </tr>
             </thead>
             <tbody>
-              {OPS_VIEWERS.map((v, i) => (
+              {rows.map((v, i) => (
                 <tr key={v.addr}>
                   <td className="rank num">{i + 1}</td>
                   <td className="mono-addr">{v.addr}</td>
@@ -302,12 +470,12 @@ function Tasks() {
 
   return (
     <>
-      <div className="ops-head">
+      <div className="admin-head">
         <div>
           <h1>Tasks</h1>
           <div className="sub">All escrow tasks across streamers — {OPS_TASKS.length} worth {money(total)} in play.</div>
         </div>
-        <div className="ops-controls">
+        <div className="admin-controls">
           <div className="seg">
             {TASK_FILTERS.map((f) => (
               <button key={f.key} type="button" className={filter === f.key ? "active" : ""} onClick={() => setFilter(f.key)}>
@@ -326,7 +494,7 @@ function Tasks() {
                 <th>Date</th>
                 <th>Streamer</th>
                 <th>Task</th>
-                <th>Viewer</th>
+                <th>Donator</th>
                 <th className="r">Amount</th>
                 <th>Outcome</th>
               </tr>
@@ -382,7 +550,7 @@ function Moderation() {
 
   return (
     <>
-      <div className="ops-head">
+      <div className="admin-head">
         <div>
           <h1>Moderation</h1>
           <div className="sub">Platform level: what a streamer can't do.</div>
@@ -484,7 +652,7 @@ function Settings() {
 
   return (
     <>
-      <div className="ops-head">
+      <div className="admin-head">
         <div>
           <h1>Settings</h1>
           <div className="sub">Admin panel parameters.</div>

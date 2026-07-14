@@ -1,12 +1,15 @@
 import { http, createConfig } from "wagmi";
-import { injected } from "wagmi/connectors";
-import { ACTIVE_CHAIN } from "./config";
+import { injected, walletConnect } from "wagmi/connectors";
+import { ACTIVE_CHAIN, WALLETCONNECT_PROJECT_ID } from "./config";
 
-// Wallet config for chain mode. injected = MetaMask / Rabby / any
-// browser wallet. No WalletConnect — no projectId needed, works out of the box.
+// Wallet config. injected() covers MetaMask/Rabby/Phantom's Ethereum mode/any browser
+// extension — wagmi auto-detects each one separately via EIP-6963, so the picker
+// (components/WalletButton.tsx) can list them by name instead of one generic "Injected".
+// WalletConnect only joins the list once a real project ID is set (lib/chain/config.ts) —
+// no projectId, no fake button.
 export const wagmiConfig = createConfig({
   chains: [ACTIVE_CHAIN],
-  connectors: [injected()],
+  connectors: [injected(), ...(WALLETCONNECT_PROJECT_ID ? [walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: true })] : [])],
   transports: {
     [ACTIVE_CHAIN.id]: http(),
   },

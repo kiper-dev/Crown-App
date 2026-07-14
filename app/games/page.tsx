@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { TopRight } from "@/components/TopRight";
-import { CrownMark } from "@/components/icons";
+import { TopNav } from "@/components/TopNav";
 import { GamesList } from "@/components/GamesList";
 import styles from "./page.module.css";
 
@@ -9,30 +7,7 @@ import styles from "./page.module.css";
 export default function GamesPage() {
   return (
     <main className={styles.wrap}>
-      <header className={styles.topnav}>
-        <div className={styles.bar}>
-          <div className={styles.left}>
-            <Link className={styles.brand} href="/">
-              <span className={styles.badge}>
-                <CrownMark width={16} height={16} />
-              </span>
-              CROWN
-            </Link>
-            <nav className={styles.nav}>
-              <Link className={`${styles.navLink} ${styles.navActive}`} href="/games">
-                Mini-games
-              </Link>
-              <Link className={styles.navLink} href="/ops">
-                Ops
-              </Link>
-              <Link className={styles.navLink} href="/ops">
-                Admin
-              </Link>
-            </nav>
-          </div>
-          <TopRight />
-        </div>
-      </header>
+      <TopNav active="games" />
 
       <div className={styles.main}>
         <div className={styles.head}>

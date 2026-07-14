@@ -1,0 +1,67 @@
+.wrap {
+  position: relative;
+  flex: none;
+  max-width: 100%; /* the svg keeps its aspect, so a narrow phone just gets a smaller wheel */
+}
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.wheel {
+  transform-origin: 100px 100px;
+  transition-property: transform;
+  /* long spin-up, slow settle — one honest deceleration, no bounce */
+  transition-timing-function: cubic-bezier(0.12, 0.62, 0.09, 1);
+}
+
+.empty {
+  fill: var(--bg-1);
+  stroke: var(--bg-3);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 6;
+}
+
+/* Hover: the slice under the cursor lights up a touch. */
+.slice,
+.clickable {
+  transition: filter var(--dur-1) var(--ease), opacity var(--dur-2) var(--ease);
+}
+.slice:hover,
+.clickable:hover {
+  filter: brightness(1.45);
+}
+.clickable {
+  cursor: pointer;
+}
+
+.dimmed {
+  opacity: 0.35;
+}
+
+.label {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--text-1);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  letter-spacing: 0.01em;
+  user-select: none;
+  pointer-events: none; /* hover/click belong to the slice underneath */
+}
+
+.rim {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+.hub {
+  fill: var(--bg-0);
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+/* The pointer is white — it marks the result, and results (like money) read white here. */
+.pointer {
+  fill: var(--text-1);
+}

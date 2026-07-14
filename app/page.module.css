@@ -31,7 +31,16 @@
 .navIn {
   animation: revealDown 0.5s var(--ease) both;
 }
+
+/* Scroll reveal: hidden until the section's ref-observed element scrolls into
+   view (see the IntersectionObserver in page.tsx), then it plays once. The hero
+   is already on-screen at mount, so it reveals immediately — same code path,
+   no special case needed. */
 .reveal {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.reveal.inView {
   animation: revealUp 0.7s var(--ease) both;
 }
 .d1 {
@@ -52,121 +61,217 @@
 .d6 {
   animation-delay: 0.45s;
 }
-
-/* ---- top navigation (header as in the mockup) ---- */
-.topnav {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  border-bottom: 1px solid var(--line);
-  background: rgba(20, 19, 24, 0.82);
-  backdrop-filter: blur(12px);
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
 }
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+
+/* ---- full-width section bands: alternating background gives the page rhythm
+   instead of one flat slab of color top to bottom ---- */
+.band {
   width: 100%;
-  padding: 14px 20px;
 }
-.left {
-  display: flex;
-  align-items: center;
-  gap: 26px;
-  min-width: 0;
-}
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--text-1);
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  white-space: nowrap;
-}
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  clip-path: polygon(50% 2%, 95% 26%, 95% 74%, 50% 98%, 5% 74%, 5% 26%);
-}
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.navLink {
-  padding: 8px 12px;
-  border-radius: var(--r-1);
-  color: var(--text-2);
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
-}
-.navLink:hover {
-  color: var(--text-1);
+.bandAlt {
   background: var(--bg-1);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
-.navLink:focus-visible {
-  outline: none;
-  box-shadow: var(--ring-neutral);
-}
-/* below 680px keep every link reachable — wrap onto its own centered row
-   instead of hiding navigation entirely */
-@media (max-width: 680px) {
-  .left {
-    flex-wrap: wrap;
-    row-gap: 10px;
-  }
-  .nav {
-    width: 100%;
-    justify-content: center;
-    gap: 4px;
-  }
+.bandInner {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 88px 24px;
 }
 
-/* ---- hero: centered heading block with a soft accent glow behind it ---- */
-.heroCenter {
-  position: relative;
+/* ---- hero: centered copy over three fanned phones ---- */
+.heroBand {
+  /* soft purple glow rising behind the phones — the dark answer to the reference's
+     lavender wash, staying inside the one-accent charter */
+  background:
+    radial-gradient(90% 70% at 50% 118%, var(--accent-soft), transparent 62%),
+    radial-gradient(120% 90% at 50% -10%, rgba(139, 124, 246, 0.06), transparent 55%);
 }
-:global(.hero-l).heroCenter {
-  margin: 0 auto;
-  max-width: 760px;
+.heroBand .bandInner {
+  padding-top: 64px;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+.heroCenter {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   text-align: center;
 }
-:global(.hero-l).heroCenter :global(.lead) {
-  max-width: 54ch;
+.appLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 20px;
 }
-:global(.hero-l).heroCenter :global(.cta-row) {
+.appLabel svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+}
+.heroTitle {
+  font-size: clamp(44px, 7vw, 84px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  max-width: 16ch;
+}
+.italic {
+  font-family: Georgia, "Times New Roman", "Playfair Display", serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+.heroSub {
+  font-size: clamp(17px, 2vw, 21px);
+  color: var(--text-2);
+  max-width: 40ch;
+  margin-top: 20px;
+}
+.heroCta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   justify-content: center;
+  margin-top: 30px;
 }
-.heroCenter::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: -120px;
-  left: 50%;
-  width: 640px;
-  height: 340px;
-  transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, var(--accent-soft) 0%, transparent 70%);
-  filter: blur(10px);
-  pointer-events: none;
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  padding: 0 26px;
+  border-radius: var(--r-2);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-1) var(--ease);
+}
+.ctaGhost:hover {
+  background: rgba(139, 124, 246, 0.22);
 }
 
-/* ---- mini-games teaser (inside .landing, which centers at 1040px) ---- */
-.gamesTeaser {
-  margin-bottom: 96px;
+/* ---- money-flow band: sits right under the hero, so keep it dark with a faint
+   accent seam at the top to separate it from the phones above ---- */
+.flowBand {
+  border-top: 1px solid var(--line);
+  background: radial-gradient(80% 60% at 50% 0%, rgba(139, 124, 246, 0.05), transparent 60%);
 }
+
+/* ---- big stat: the single most important number on the page, in the one accent color ---- */
+.statRow {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.statNum {
+  font-size: clamp(72px, 9vw, 108px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--accent);
+  flex: none;
+}
+.statCaption {
+  font-size: 19px;
+  color: var(--text-2);
+  max-width: 40ch;
+}
+.statCaption b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.strike {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-3);
+}
+
+/* fee comparison bars */
+.compare {
+  max-width: 420px;
+}
+
+/* trust/payouts pair — two cards instead of three, more room to breathe */
+.pillarsTwo {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+@media (max-width: 700px) {
+  .pillarsTwo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0 10px;
+}
+.routeArrow {
+  color: var(--text-3);
+}
+.codeBlock {
+  display: block;
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: var(--bg-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-1);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.codeBlock b {
+  color: var(--text-1);
+}
+
+/* ---- how it works: short steps + a real, working donate demo ---- */
+.howRow {
+  display: grid;
+  grid-template-columns: 340px 400px;
+  justify-content: center;
+  gap: 64px;
+  align-items: start;
+  margin-bottom: 88px;
+}
+.howList {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.demoLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+@media (max-width: 860px) {
+  .howRow {
+    grid-template-columns: minmax(0, 400px);
+    justify-content: center;
+    gap: 32px;
+  }
+}
+
+/* ---- mini-games teaser ---- */
 .gamesHead {
   display: flex;
   align-items: flex-end;
@@ -195,4 +300,10 @@
 }
 .seeAll:hover {
   color: var(--accent-hover);
+}
+
+/* .final already carries its own padding-bottom (globals.css) for the old flat
+   layout; inside a padded band that would double up, so trim the band's own. */
+.finalBand .bandInner {
+  padding-bottom: 0;
 }

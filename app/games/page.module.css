@@ -1,88 +1,10 @@
 /* Mini-games catalog page. Only design-charter tokens: one purple accent, no gold.
-   The top navigation mirrors the home header (same structure and tokens). */
+   Top navigation is the shared <TopNav> component (components/TopNav.tsx) — do not
+   re-add a header here, or this page silently drifts from the rest of the site again. */
 .wrap {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.topnav {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  border-bottom: 1px solid var(--line);
-  background: rgba(20, 19, 24, 0.82);
-  backdrop-filter: blur(12px);
-}
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 14px 24px;
-}
-.left {
-  display: flex;
-  align-items: center;
-  gap: 26px;
-  min-width: 0;
-}
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--text-1);
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  white-space: nowrap;
-}
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  clip-path: polygon(50% 2%, 95% 26%, 95% 74%, 50% 98%, 5% 74%, 5% 26%);
-}
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.navLink {
-  padding: 8px 12px;
-  border-radius: var(--r-1);
-  color: var(--text-2);
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
-}
-.navLink:hover {
-  color: var(--text-1);
-  background: var(--bg-1);
-}
-.navLink:focus-visible {
-  outline: none;
-  box-shadow: var(--ring-neutral);
-}
-.navActive {
-  color: var(--accent);
-}
-.navActive:hover {
-  color: var(--accent);
-}
-@media (max-width: 620px) {
-  .nav {
-    display: none;
-  }
 }
 
 .main {

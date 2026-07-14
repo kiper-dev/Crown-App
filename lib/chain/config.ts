@@ -22,6 +22,17 @@ export function isSplitterConfigured() {
   return ADDRESSES.splitter !== ZERO;
 }
 
+// ──────────────────────────────────────────────────────────────────
+// WalletConnect needs a project ID from https://cloud.walletconnect.com — free, but it's a
+// real account, not something to fake. Until one is set, WalletConnect is left out of the
+// wallet picker entirely rather than shown as a broken button (see components/WalletButton.tsx).
+// ──────────────────────────────────────────────────────────────────
+export const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+
+export function isWalletConnectConfigured() {
+  return !!WALLETCONNECT_PROJECT_ID;
+}
+
 // ABI of exactly the functions the front end calls (from contracts/evm/src/Splitter.sol).
 export const SPLITTER_ABI = [
   {

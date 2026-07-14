@@ -1,0 +1,96 @@
+/* One mini-game's own page. Only design-charter tokens: one purple accent, no gold.
+   Top navigation is the shared <TopNav> component — do not re-add a header here. */
+.wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.back {
+  align-self: flex-start;
+  font-size: 15px;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--text-1);
+}
+
+/* Hero: a placeholder cover (gradient + icon) until a real screenshot exists —
+   coverUrl in games.ts swaps it in without touching this markup. */
+.cover {
+  height: 220px;
+  border-radius: var(--r-3);
+  border: 1px solid var(--line);
+  background-image: linear-gradient(155deg, var(--bg-2), var(--bg-1) 55%, #0f0e14);
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.head h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  font-size: 18px;
+  color: var(--text-2);
+  max-width: 60ch;
+}
+
+.section h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 10px;
+}
+.section p {
+  font-size: 16px;
+  color: var(--text-2);
+  max-width: 65ch;
+}
+
+/* auto-fit, not a fixed 3 columns: games have different step counts (Task has
+   3, Roulette has 4, …) — this fills the row instead of stranding a lone item. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 640px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}

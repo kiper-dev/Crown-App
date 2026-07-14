@@ -1,0 +1,276 @@
+/* Public roulette page — one centered column: the open round with live odds, then the
+   suggest form. Backdrop comes from the streamer's roulette design; accents stay on-charter
+   (pool bars are neutral white — they're data, not actions). */
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.col {
+  width: 100%;
+  max-width: 1060px;
+  padding: 48px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+/* Wheel beside the round/form, not stacked on top of everything. */
+.layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 12px 40px;
+  align-items: start;
+  justify-items: center;
+  margin-top: 16px;
+}
+.wheelCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 24px;
+}
+.stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+@media (max-width: 940px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .wheelCol {
+    position: static;
+  }
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.handle {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.live {
+  color: var(--text-2);
+}
+
+.headline {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  margin-top: 8px;
+  max-width: 24ch;
+}
+.desc {
+  font-size: 16px;
+  color: var(--text-2);
+  max-width: 48ch;
+}
+.ruleNote {
+  font-size: 14px;
+  color: var(--text-3);
+  max-width: 46ch;
+}
+
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.verdictNote {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* The open round. Each suggestion is a button — tapping pre-fills the form to back it. */
+.roundCard {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: var(--r-3);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+.roundHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+.roundHead .num {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.suggestion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 36px;
+  grid-template-areas:
+    "title pool odds"
+    "bar   bar  bar";
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--bg-0);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--dur-1) var(--ease);
+}
+.suggestion:hover {
+  border-color: var(--line-strong);
+}
+.sTitle {
+  grid-area: title;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.sGenre {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-3);
+  margin-left: 6px;
+}
+.sBar {
+  grid-area: bar;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.sFill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--text-1);
+  transition: width 0.6s var(--ease);
+}
+.sPool {
+  grid-area: pool;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+  text-align: right;
+}
+.sOdds {
+  grid-area: odds;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: right;
+}
+
+.roundFoot {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.suggestCard {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.suggestFields {
+  display: flex;
+  gap: 10px;
+}
+.genreSelect {
+  height: 48px;
+  padding: 0 12px;
+  border-radius: var(--r-2);
+  border: 1px solid var(--line);
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-size: 14px;
+}
+.genreSelect:focus {
+  outline: none;
+  border-color: rgba(235, 233, 244, 0.32);
+}
+.customAmount {
+  width: 110px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-size: 14px;
+}
+.customAmount:focus {
+  outline: none;
+  border-color: rgba(235, 233, 244, 0.32);
+}
+
+.socials {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.socials a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+.socials a:hover {
+  color: var(--text-1);
+}
+
+.shareRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.qrBox {
+  padding: 14px;
+  border-radius: var(--r-2);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+.footer {
+  margin-top: 28px;
+  opacity: 0.7;
+}

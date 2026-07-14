@@ -1,0 +1,153 @@
+/* Shared styling for the game Overview tabs (Task queue, Fundraiser campaign) so the two
+   live-management screens read as one family. Charter: one purple accent, no extra color. */
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Task queue ── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--bg-1);
+  transition: opacity var(--dur-1) var(--ease);
+}
+.rowDone {
+  opacity: 0.55; /* resolved tasks recede — the eye goes to what still needs a decision */
+}
+.rowMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rowTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.who {
+  font-weight: 600;
+  color: var(--text-1);
+}
+.when {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.text {
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex: none;
+}
+.amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+
+/* ── Fundraiser campaign ── */
+.head {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.promise {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.4;
+}
+.statusRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bar {
+  position: relative;
+  height: 12px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  transition: width var(--dur-2) var(--ease);
+}
+/* the accept threshold (min % of goal) — a thin marker so you can see when Accept unlocks */
+.barMark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--text-2);
+  border-radius: 1px;
+}
+.progressMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.progressMeta b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.backers {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.backer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.backer:last-child {
+  border-bottom: none;
+}
+.backerName {
+  font-weight: 600;
+  color: var(--text-1);
+}
+.backerAmt {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+}
