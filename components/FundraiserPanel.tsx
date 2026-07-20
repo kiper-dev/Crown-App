@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { QrIcon, CopyIcon, PhoneIcon, DesktopIcon, DragHandleIcon, UploadIcon, ChevronDown, SocialIcon, SOCIAL_LABEL, SOCIAL_KINDS, SOCIAL_BRAND } from "@/components/icons";
 import { LivePreview } from "@/components/LivePreview";
+import { CrownBadge } from "@/components/CrownBadge";
+import { CropModal } from "@/components/CropModal";
 import {
   BACKGROUND_COLOR_PRESETS,
   BACKGROUND_GRADIENT_PRESETS,
@@ -37,6 +39,11 @@ export function FundraiserPanel({ profile, onSave }: { profile: Profile; onSave:
   const [openWidget, setOpenWidget] = useState<PageWidget["kind"] | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const bgFileRef = useRef<HTMLInputElement>(null);
+  const fillFileRef = useRef<HTMLInputElement>(null);
+  // Avatar + progress image go through the crop modal (same one as /create). cropSrc is the object
+  // URL being cropped; cropTarget says where the result lands.
+  const [cropSrc, setCropSrc] = useState("");
+  const [cropTarget, setCropTarget] = useState<"avatar" | "fill">("avatar");
 
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
@@ -103,14 +110,27 @@ export function FundraiserPanel({ profile, onSave }: { profile: Profile; onSave:
     patchProfile({ socials: profile.socials.filter((_, j) => j !== i) });
   }
 
-  function onAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => patchProfile({ avatarUrl: String(reader.result) });
-    reader.readAsDataURL(file);
+  // Avatar + progress image open the crop modal instead of saving the raw file, so both get the
+  // same reframe-in-a-circle flow as sign-up. Which one is being edited is held in cropTarget.
+  function openCrop(file: File | undefined, target: "avatar" | "fill") {
+    if (!file || !file.type.startsWith("image/")) return;
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropTarget(target);
+    setCropSrc(URL.createObjectURL(file));
+  }
+  function onCropConfirm(dataUrl: string) {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc("");
+    if (cropTarget === "avatar") patchProfile({ avatarUrl: dataUrl });
+    else patchFr({ fillImage: dataUrl });
+  }
+  function onCropCancel() {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc("");
   }
 
+  // The page backdrop is the one image that ISN'T cropped — a square crop would ruin a full-bleed
+  // background, so it keeps the plain file → data URL path.
   function onBackgroundFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -145,9 +165,13 @@ export function FundraiserPanel({ profile, onSave }: { profile: Profile; onSave:
               <div className="card" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div className={styles.rowHead}>Profile</div>
                 <div className={styles.avatarRow}>
-                  <div className={styles.avatarPreview} style={profile.avatarUrl ? { backgroundImage: `url(${profile.avatarUrl})` } : undefined}>
-                    {!profile.avatarUrl && (profile.name.trim().charAt(0) || "?")}
-                  </div>
+                  {/* show the cropped avatar AS-IS (its baked-in shape is the outline) — no circle
+                      clip, no grey backdrop; only the initials fallback keeps the round chip */}
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt="" width={56} height={56} style={{ width: 56, height: 56, objectFit: "contain", flex: "none", display: "block" }} />
+                  ) : (
+                    <div className={styles.avatarPreview}>{profile.name.trim().charAt(0) || "?"}</div>
+                  )}
                   <div className={styles.avatarControls}>
                     <label className={`toggle${profile.avatarEnabled !== false ? " on" : ""}`}>
                       <span className="track"><span className="knob" /></span>
@@ -157,9 +181,50 @@ export function FundraiserPanel({ profile, onSave }: { profile: Profile; onSave:
                     <button type="button" className="btn-outline" onClick={() => fileRef.current?.click()}>
                       <UploadIcon /> Choose
                     </button>
-                    <input ref={fileRef} type="file" accept="image/*" hidden onChange={onAvatarFile} />
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => {
+                        openCrop(e.target.files?.[0], "avatar");
+                        e.target.value = "";
+                      }}
+                    />
                   </div>
                 </div>
+
+                <div className={styles.avatarRow}>
+                  <div className={styles.avatarPreview} style={{ borderRadius: 12, background: "transparent", overflow: "hidden" }}>
+                    {fr.fillImage ? (
+                      <img src={fr.fillImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <CrownBadge size={44} />
+                    )}
+                  </div>
+                  <div className={styles.avatarControls}>
+                    <div className={styles.rowHead}>Progress image</div>
+                    <button type="button" className="btn-outline" onClick={() => fillFileRef.current?.click()}>
+                      <UploadIcon /> Choose
+                    </button>
+                    {fr.fillImage && (
+                      <button type="button" className="btn-outline" onClick={() => patchFr({ fillImage: "" })}>
+                        Reset
+                      </button>
+                    )}
+                    <input
+                      ref={fillFileRef}
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => {
+                        openCrop(e.target.files?.[0], "fill");
+                        e.target.value = "";
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="footnote">Fills up as the goal is reached. Default is the Crown badge.</div>
 
                 <div className={styles.bioField}>
                   <div className={styles.rowHead}>The promise</div>
@@ -447,6 +512,8 @@ export function FundraiserPanel({ profile, onSave }: { profile: Profile; onSave:
           </div>
         </div>
       </div>
+
+      {cropSrc && <CropModal imageSrc={cropSrc} onConfirm={onCropConfirm} onCancel={onCropCancel} onReupload={(f) => openCrop(f, cropTarget)} />}
     </div>
   );
 }

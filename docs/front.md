@@ -149,14 +149,31 @@ Four roles. No fifth. More than three shades on a page is a defect.
 
 | Role | Value | Where |
 |---|---|---|
-| background | `#141318`, surfaces one step lighter | everywhere |
-| text | near-white; amounts large, `tabular-nums` | everywhere |
-| accent | purple ~`#8B7CF6` (like Phantom, warm) | **only** actions and brand |
-| error | muted red | only for something broken |
+| background | `#141318`, surfaces one step lighter (`#1B1A21`, `#232230`, `#2E2D39`) | everywhere |
+| text | near-white `#F1EFF7` → `#A6A2B4` → `#8B8798`; amounts large, `tabular-nums` | everywhere |
+| accent | purple — flat `#C0B7FA`, or the accent **gradient** on filled surfaces (below) | **only** actions and brand |
+| error | muted red `#E5726B` | only for something broken |
+
+### Accent gradient
+
+The accent isn't one flat purple — filled accent surfaces are painted with a vertical gradient (top purple → bottom near-white), so the accent reads as this gradient rather than a slab of color. The flat token is the gradient's *midpoint*, used for small tints where a gradient would be noise.
+
+| Token | Value | Where |
+|---|---|---|
+| `--accent` (flat) | `#C0B7FA` (midpoint of `#8B7CF6`→`#F4F2FE`) | chips, dots, borders, links, active states, small tints |
+| `--accent-hover` / `--accent-down` | `#CFC7FC` / `#B0A5F9` | flat-accent hover / press |
+| `--accent-soft` | `rgba(192,183,250,.16)` | focus rings, faint tinted backdrops |
+| `--accent-grad` | `linear-gradient(180deg, #8B7CF6 0%, #F4F2FE 100%)` | primary buttons, the fundraiser **crown fill** (`CrownFill`) |
+| `--accent-grad-hover` / `--accent-grad-down` | `…#CFC7FC→#FFF` / `…#B0A5F9→#EBE7FB` | button hover / press |
+| `--accent-grad-ink` | `#0F0E14` | text/icons on any accent-gradient surface |
+| `--chart-grad` | `linear-gradient(180deg, #8B7CF6 0%, #ffffff 100%)` | chart bars/line (runs to pure white) |
+
+SVG can't take a CSS `linear-gradient()` as a `fill`, so components that fill with the accent (e.g. `CrownFill`) declare a matching `<linearGradient>` `#8B7CF6→#F4F2FE` in `<defs>` and reference it — same stops as `--accent-grad`.
 
 Rules:
 
 - Colors are NOT plentiful. Like Claude and Discord: a neutral interface, a pinpoint accent. On a typical screen there are two or three purple spots — the action button, the active nav item, the logo. Purple backgrounds, hero fills, decoration — forbidden.
+- The accent **gradient** stays to ~2–3 filled spots per screen (primary button, chart, one hero figure). Small tints (chips, dots, nav, borders) stay the flat `--accent` so a page never turns into gradient soup.
 - **No green numbers.** An amount doesn't need color: size and weight do the job. A reputation gain — in white.
 - Statuses communicate via shape (a pill, an icon), not a traffic light.
 - Third-party service logos (YouTube, Twitch, Kick, X) are recolored to our neutral. Someone else's red on our page is a hole in the palette.

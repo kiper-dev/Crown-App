@@ -1,0 +1,319 @@
+/* Landing OBS-widgets showcase: a single heading, then the actual widget mockups (alerts, goal,
+   top donors) cycling one at a time. No captions — the widget itself is what's shown. */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.heading {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* fixed-height stage so swapping widgets never shifts the layout */
+.stage {
+  margin-top: 34px;
+  width: 100%;
+  max-width: 420px;
+  height: 168px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.widget {
+  width: 100%;
+  background: var(--bg-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-float);
+  /* keyed by index in the TSX → remounts each cycle, so this enter plays every time */
+  animation: obsIn 0.5s var(--ease) backwards;
+}
+@keyframes obsIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Alerts: a donation popup (avatar + name + amount + message) ---- */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.alertAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-grad-ink);
+  font-size: 18px;
+  font-weight: 700;
+}
+.alertBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+.alertRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.alertName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.amtPill {
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--accent-grad-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.alertMsg {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Goal: a labelled progress bar ---- */
+.goal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.goalTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.goalLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.goalPct {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.goalTrack {
+  height: 14px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.goalFill {
+  height: 100%;
+  width: 66%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+.goalSub {
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Top donors: a mini leaderboard ---- */
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.topTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: left;
+  margin-bottom: 2px;
+}
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rank {
+  width: 14px;
+  flex: none;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.name {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amt {
+  flex: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Rank-up: reuses the .alert row, with a crown badge ---- */
+.rankBadge {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rankBadge svg {
+  width: 26px;
+  height: 26px;
+}
+.rankLine {
+  text-align: left;
+  font-size: 16px;
+  color: var(--text-1);
+}
+.rankLine b {
+  font-weight: 700;
+}
+.rankTier {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ---- Game widgets: Roulette / Task ---- */
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.gameHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.gameHead svg {
+  color: var(--accent);
+  flex: none;
+}
+.gamePot {
+  margin-left: auto;
+  color: var(--text-2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.gameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gameName {
+  width: 96px;
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gameBar {
+  flex: 1;
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.gameBar > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+.gamePct {
+  width: 34px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.gameText {
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--text-1);
+}
+.gameSub {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---- Fundraiser: the crown fill + numbers ---- */
+.fund {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: left;
+}
+.fundBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fundPct {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.fundNums {
+  font-size: 13px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget {
+    animation: none;
+  }
+}

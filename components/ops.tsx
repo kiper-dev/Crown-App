@@ -148,8 +148,9 @@ export function SortHeader({
   align?: "r";
 }) {
   return (
-    <th className={align}>
-      <button type="button" className="sort-th" onClick={onClick} aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}>
+    // aria-sort belongs on the column header itself, not the button inside it.
+    <th className={align} aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}>
+      <button type="button" className="sort-th" onClick={onClick}>
         {label}
         <span className={`sort-arrow${active ? " active" : ""}`}>{active ? (dir === "asc" ? "▲" : "▼") : "↕"}</span>
       </button>

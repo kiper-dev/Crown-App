@@ -1,0 +1,54 @@
+/* Shared reputation-delta row for every mini-game's donate form. Kept in one place so the four
+   public pages stay pixel-identical (see ReputationDelta.tsx).
+
+   Styled as a soft reward-preview callout, deliberately NOT like the inputs above it: a faint
+   accent wash with no border + right-aligned figures reads as "here's what this does to your
+   standing", not a field you type into. */
+.rep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 15px;
+  border-radius: var(--r-2);
+  background: var(--accent-soft);
+}
+.repLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.repVals {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.repNow {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.repArrow {
+  font-size: 13px;
+  color: var(--accent);
+}
+.repNext {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+/* the tier the contribution lands you in — a small level badge, shown only when it changes.
+   The name's color is the streamer's own tier color, set inline in the component. */
+.repTier {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--bg-0);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}

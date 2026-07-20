@@ -18,18 +18,19 @@
     transform: none;
   }
 }
-@keyframes revealDown {
+/* The header drops in as ONE solid bar: the whole panel slides down from above the viewport,
+   background, wordmark and links all moving together. Deliberately no opacity fade — fading a
+   translucent bar reads as the labels appearing one by one instead of the bar itself arriving. */
+@keyframes navDrop {
   from {
-    opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-100%);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
 .navIn {
-  animation: revealDown 0.5s var(--ease) both;
+  animation: navDrop 0.55s var(--ease) both;
 }
 
 /* Scroll reveal: hidden until the section's ref-observed element scrolls into
@@ -66,6 +67,9 @@
     opacity: 1;
     transform: none;
   }
+  .navIn {
+    animation: none;
+  }
 }
 
 /* ---- full-width section bands: alternating background gives the page rhythm
@@ -86,11 +90,10 @@
 
 /* ---- hero: centered copy over three fanned phones ---- */
 .heroBand {
-  /* soft purple glow rising behind the phones — the dark answer to the reference's
-     lavender wash, staying inside the one-accent charter */
-  background:
-    radial-gradient(90% 70% at 50% 118%, var(--accent-soft), transparent 62%),
-    radial-gradient(120% 90% at 50% -10%, rgba(139, 124, 246, 0.06), transparent 55%);
+  /* Soft purple glow rising from below, behind the phones — that one stays. The band used to
+     carry a second wash from the top edge too; it lit the headline for no reason and made the
+     page open on a haze instead of on the words. */
+  background: radial-gradient(90% 70% at 50% 118%, var(--accent-soft), transparent 62%);
 }
 .heroBand .bandInner {
   padding-top: 64px;
@@ -124,12 +127,11 @@
   line-height: 1.04;
   max-width: 16ch;
 }
+/* the one emphasized word in the hero title — set apart by weight only (same InterVar font and
+   white color as the rest), not by color or slant */
 .italic {
-  font-family: Georgia, "Times New Roman", "Playfair Display", serif;
-  font-style: italic;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--accent);
+  font-weight: 900;
+  color: inherit;
 }
 .heroSub {
   font-size: clamp(17px, 2vw, 21px);
@@ -152,25 +154,28 @@
   height: 56px;
   padding: 0 26px;
   border-radius: var(--r-2);
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text-1);
   font-size: 17px;
   font-weight: 600;
   text-decoration: none;
-  transition: background var(--dur-1) var(--ease);
+  transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
 }
 .ctaGhost:hover {
-  background: rgba(139, 124, 246, 0.22);
+  background: var(--bg-2);
 }
 
 /* ---- money-flow band: sits right under the hero, so keep it dark with a faint
    accent seam at the top to separate it from the phones above ---- */
+/* The "How it works" band: a plain hairline separating it from the hero, no wash. The seam is
+   what marks the section change — a glow on top of it was just haze over the explanation. */
 .flowBand {
   border-top: 1px solid var(--line);
-  background: radial-gradient(80% 60% at 50% 0%, rgba(139, 124, 246, 0.05), transparent 60%);
 }
 
-/* ---- big stat: the single most important number on the page, in the one accent color ---- */
+/* ---- big stat: the single most important number on the page — a figure, so it's white
+   and bold (money/numbers are white here), not another purple splash ---- */
 .statRow {
   display: flex;
   align-items: center;
@@ -183,7 +188,7 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
-  color: var(--accent);
+  color: var(--text-1);
   flex: none;
 }
 .statCaption {
@@ -206,28 +211,6 @@
   max-width: 420px;
 }
 
-/* trust/payouts pair — two cards instead of three, more room to breathe */
-.pillarsTwo {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-@media (max-width: 700px) {
-  .pillarsTwo {
-    grid-template-columns: 1fr;
-  }
-}
-
-.route {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 14px 0 10px;
-}
-.routeArrow {
-  color: var(--text-3);
-}
 .codeBlock {
   display: block;
   margin: 12px 0;
@@ -241,34 +224,6 @@
 }
 .codeBlock b {
   color: var(--text-1);
-}
-
-/* ---- how it works: short steps + a real, working donate demo ---- */
-.howRow {
-  display: grid;
-  grid-template-columns: 340px 400px;
-  justify-content: center;
-  gap: 64px;
-  align-items: start;
-  margin-bottom: 88px;
-}
-.howList {
-  display: flex;
-  flex-direction: column;
-  gap: 26px;
-}
-.demoLabel {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-@media (max-width: 860px) {
-  .howRow {
-    grid-template-columns: minmax(0, 400px);
-    justify-content: center;
-    gap: 32px;
-  }
 }
 
 /* ---- mini-games teaser ---- */
@@ -306,4 +261,39 @@
    layout; inside a padded band that would double up, so trim the band's own. */
 .finalBand .bandInner {
   padding-bottom: 0;
+}
+
+/* ---- reputation section: copy on the left, a live-looking rep card + tier ladder on the right ---- */
+.repSection {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 56px;
+  align-items: center;
+}
+@media (max-width: 860px) {
+  .repSection {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+.repTitle {
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+.repLead {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--text-2);
+  margin-top: 18px;
+  max-width: 42ch;
+}
+.repLead b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.repViz {
+  display: flex;
+  flex-direction: column;
 }

@@ -6,6 +6,31 @@
   flex-direction: column;
 }
 
+/* Entrance: the page settles in on load — search bar, then the filter sidebar, then the cards
+   cascading up one by one. Plays once on mount (no observer needed; the page is above the fold). */
+@keyframes discoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Exit: the same move, reversed — cards fade back down. Used when a filter changes: the grid
+   plays this out, then swaps to the new results and plays discoverIn again (see page.tsx). */
+@keyframes discoverOut {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
 .main {
   width: 100%;
   max-width: 1280px;
@@ -19,9 +44,14 @@
 .searchRow {
   display: flex;
   justify-content: center;
+  animation: discoverIn 0.5s var(--ease) both;
 }
 .searchRow :global(.search) {
   max-width: 760px;
+}
+/* a slimmer search bar on this page — less tall than the global 76px default */
+.searchRow :global(.search) input {
+  height: 60px;
 }
 
 .body {
@@ -42,6 +72,8 @@
   gap: 28px;
   position: sticky;
   top: 24px;
+  animation: discoverIn 0.5s var(--ease) both;
+  animation-delay: 0.08s;
 }
 
 .filterGroup {
@@ -125,10 +157,51 @@
   border-radius: var(--r-3);
   text-decoration: none;
   color: inherit;
-  transition: border-color var(--dur-1) var(--ease);
+  transition: border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
 }
 .card:hover {
   border-color: var(--line-strong);
+  transform: translateY(-3px);
+}
+
+/* The grid is in one of two animation modes at a time (class set from page.tsx):
+   .entering — cards cascade IN (first card first);  .exiting — cards fade OUT in reverse (last first).
+   Delays live on the grid modifier so the same .card rules serve both. */
+.grid.entering .card { animation: discoverIn 0.42s var(--ease) both; }
+.grid.exiting .card { animation: discoverOut 0.34s var(--ease) both; }
+
+/* enter: first → last */
+.grid.entering .card:nth-child(1) { animation-delay: 0.02s; }
+.grid.entering .card:nth-child(2) { animation-delay: 0.06s; }
+.grid.entering .card:nth-child(3) { animation-delay: 0.10s; }
+.grid.entering .card:nth-child(4) { animation-delay: 0.14s; }
+.grid.entering .card:nth-child(5) { animation-delay: 0.18s; }
+.grid.entering .card:nth-child(6) { animation-delay: 0.22s; }
+.grid.entering .card:nth-child(7) { animation-delay: 0.26s; }
+.grid.entering .card:nth-child(8) { animation-delay: 0.30s; }
+.grid.entering .card:nth-child(n + 9) { animation-delay: 0.34s; }
+
+/* exit: reversed — the last-shown cards leave first (mirror of the entrance) */
+.grid.exiting .card:nth-last-child(1) { animation-delay: 0.02s; }
+.grid.exiting .card:nth-last-child(2) { animation-delay: 0.06s; }
+.grid.exiting .card:nth-last-child(3) { animation-delay: 0.10s; }
+.grid.exiting .card:nth-last-child(4) { animation-delay: 0.14s; }
+.grid.exiting .card:nth-last-child(5) { animation-delay: 0.18s; }
+.grid.exiting .card:nth-last-child(6) { animation-delay: 0.22s; }
+.grid.exiting .card:nth-last-child(7) { animation-delay: 0.26s; }
+.grid.exiting .card:nth-last-child(8) { animation-delay: 0.30s; }
+.grid.exiting .card:nth-last-child(n + 9) { animation-delay: 0.34s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .searchRow,
+  .sidebar,
+  .grid.entering .card,
+  .grid.exiting .card {
+    animation: none;
+  }
+  .card:hover {
+    transform: none;
+  }
 }
 
 .cardHead {

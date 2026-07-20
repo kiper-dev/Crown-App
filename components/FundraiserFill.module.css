@@ -1,0 +1,65 @@
+/* Central figure for the fundraiser page: a fill-up vessel. The dim layer is the "empty" state; the
+   full-colour layer sits on top of it, clipped to the collected fraction from the bottom, so raising
+   pct reveals colour rising through the figure. Photo mode frames the image in a rounded card; badge
+   mode is the bare brand mark (transparent corners, so no visible box around it). */
+.fill {
+  position: relative;
+  display: block;
+  flex: none;
+}
+.fill svg {
+  display: block;
+}
+
+/* photo: a rounded card so any uploaded image reads as a framed picture */
+.asPhoto {
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--bg-1);
+  box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-float);
+}
+
+.dim,
+.full {
+  position: absolute;
+  inset: 0;
+}
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* empty state: a photo goes grey + darkened so the colour reveal reads; the badge's empty layer is
+   already a faint outline (CrownBadge outline mode), so it needs no extra dimming. */
+.asPhoto .dim {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.5;
+}
+
+/* the rising colour front */
+.full {
+  transition: clip-path 0.6s var(--ease);
+  will-change: clip-path;
+}
+
+/* a thin accent line at the water level — photo mode only (the badge's transparent corners would
+   leave the line hanging in empty space beside the hexagon). */
+.waterline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 8px var(--accent-soft);
+  transition: bottom 0.6s var(--ease);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .full,
+  .waterline {
+    transition: none;
+  }
+}

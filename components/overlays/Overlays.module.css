@@ -183,3 +183,148 @@
   font-weight: 700;
   color: var(--text-1);
 }
+
+/* ---- Rank-up (reuses the alert card look) ---- */
+.rank {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 26px 18px 18px;
+  min-width: 320px;
+  max-width: 560px;
+  background: rgba(20, 19, 24, 0.92);
+  border: 1px solid var(--line-strong);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: alertCycle 5s var(--ease) both;
+}
+.rankBadge {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.rankBadge svg {
+  width: 26px;
+  height: 26px;
+}
+.rankTier {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ---- Game widgets (roulette / task): a compact card ---- */
+.game {
+  min-width: 260px;
+  max-width: 520px;
+  padding: 14px 18px;
+  background: rgba(20, 19, 24, 0.92);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.gameHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.gameHead svg {
+  color: var(--accent);
+}
+.gamePot {
+  margin-left: auto;
+  color: var(--text-2);
+  font-weight: 700;
+}
+.gameWinner {
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.gameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.gameName {
+  width: 100px;
+  flex: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gameBar {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg-3);
+  overflow: hidden;
+}
+.gameBar > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+.gamePct {
+  width: 40px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.gameText {
+  margin-top: 10px;
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--text-1);
+}
+.gameSub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ---- Fundraiser: the crown fill + numbers ---- */
+.fund {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px 14px 14px;
+  background: rgba(20, 19, 24, 0.92);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.fundBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fundPct {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.fundNums {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.fundNums b {
+  color: var(--text-1);
+}

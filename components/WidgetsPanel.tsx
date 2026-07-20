@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { CopyIcon, QrIcon } from "@/components/icons";
-import { OVERLAYS, type OverlayKind } from "@/lib/data/overlays";
+import { CopyIcon, QrIcon, SearchIcon, NavIcon, GameIcon } from "@/components/icons";
+import { OVERLAYS, type OverlayDef, type OverlayKind } from "@/lib/data/overlays";
+import { GAMES, type GameId } from "@/lib/data/games";
 import styles from "./WidgetsPanel.module.css";
 
 function overlayUrl(origin: string, handle: string, kind: OverlayKind): string {
@@ -11,8 +12,10 @@ function overlayUrl(origin: string, handle: string, kind: OverlayKind): string {
 }
 
 // Static mini-illustration of each overlay — a hint of what OBS will show, not the live thing.
+// New kinds reuse the closest of the three shapes: a popup (alerts/rank/task), a progress bar
+// (goal/fundraiser), or a list (top/roulette).
 function MiniPreview({ kind }: { kind: OverlayKind }) {
-  if (kind === "alerts") {
+  if (kind === "alerts" || kind === "rank" || kind === "task") {
     return (
       <div className={`${styles.mini} ${styles.miniCenterTop}`}>
         <div className={styles.miniAlert}>
@@ -25,7 +28,7 @@ function MiniPreview({ kind }: { kind: OverlayKind }) {
       </div>
     );
   }
-  if (kind === "goal") {
+  if (kind === "goal" || kind === "fundraiser") {
     return (
       <div className={`${styles.mini} ${styles.miniCenterBottom}`}>
         <div className={styles.miniGoal}>
@@ -114,16 +117,84 @@ function OverlayCard({ handle, kind, label, desc }: { handle: string; kind: Over
   );
 }
 
+// Categories come from the data, not a hand-kept list: "General" is everything not tied to a game,
+// then one per mini-game that actually ships a widget — so adding a game widget adds its category,
+// with the game's own title as the label.
+type Cat = "all" | "general" | GameId;
+
+const CATS: { key: Cat; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "general", label: "General" },
+  ...GAMES.filter((g) => OVERLAYS.some((o) => o.game === g.id)).map((g) => ({ key: g.id as Cat, label: g.title })),
+];
+
+const inCat = (o: OverlayDef, c: Cat) => (c === "all" ? true : c === "general" ? !o.game : o.game === c);
+
+// Every row carries an icon, like the platform rows on /discover: the games use their own game
+// icon, so a category reads as the game it belongs to at a glance.
+function CatIcon({ cat }: { cat: Cat }) {
+  if (cat === "all") return <NavIcon name="widgets" />;
+  if (cat === "general") return <NavIcon name="donations" />;
+  return <GameIcon id={cat} width={16} height={16} />;
+}
+
 export function WidgetsPanel({ handle }: { handle: string }) {
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState<Cat>("all");
+
+  const term = q.trim().toLowerCase();
+  const hits = (o: OverlayDef) => !term || o.label.toLowerCase().includes(term) || o.desc.toLowerCase().includes(term);
+  const shown = OVERLAYS.filter((o) => inCat(o, cat) && hits(o));
+  // counts follow the search, so a category tells you what you'd actually get if you clicked it
+  const countIn = (c: Cat) => OVERLAYS.filter((o) => inCat(o, c) && hits(o)).length;
+
   return (
     <div className={styles.wrap}>
       <p className={styles.help}>
         Add any overlay to OBS as a <b>Browser Source</b> — paste its URL. It updates live when someone donates.
       </p>
-      <div className={styles.grid}>
-        {OVERLAYS.map((o) => (
-          <OverlayCard key={o.kind} handle={handle} kind={o.kind} label={o.label} desc={o.desc} />
-        ))}
+
+      <div className={styles.body}>
+        <aside className={styles.sidebar}>
+          <div className="search-field">
+            <SearchIcon width={16} height={16} />
+            <input type="text" placeholder="Search widgets…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search widgets" />
+          </div>
+
+          <div className={styles.filterGroup}>
+            <div className={styles.filterLabel}>Categories</div>
+            <div className={styles.catList}>
+              {CATS.map((c) => {
+                const n = countIn(c.key);
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    className={`${styles.catRow} ${cat === c.key ? styles.catOn : ""}`}
+                    aria-pressed={cat === c.key}
+                    // nothing to show and not the current pick → nothing to click
+                    disabled={n === 0 && cat !== c.key}
+                    onClick={() => setCat(c.key)}
+                  >
+                    <CatIcon cat={c.key} />
+                    <span className={styles.catLabel}>{c.label}</span>
+                    <span className={styles.catCount}>{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </aside>
+
+        {shown.length === 0 ? (
+          <div className="empty-log">No widget matches “{q.trim()}”.</div>
+        ) : (
+          <div className={styles.grid}>
+            {shown.map((o) => (
+              <OverlayCard key={o.kind} handle={handle} kind={o.kind} label={o.label} desc={o.desc} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

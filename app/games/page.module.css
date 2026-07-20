@@ -7,6 +7,19 @@
   flex-direction: column;
 }
 
+/* Entrance: the heading settles in, then the game cards cascade up one by one. Plays once on
+   mount (the page is above the fold, so no observer needed) — same move as /discover. */
+@keyframes gamesIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .main {
   width: 100%;
   max-width: 1120px;
@@ -25,4 +38,46 @@
   font-size: 15px;
   color: var(--text-3);
   margin-top: 2px;
+}
+
+/* heading first, then the cards */
+.head {
+  animation: gamesIn 0.5s var(--ease) both;
+}
+
+/* GamesList owns its own module, so reach its cards from here via :global() — scoped under
+   .main so ONLY this page animates. The homepage teaser reuses GamesList and already has its
+   own scroll-reveal; animating the shared component itself would double up there.
+   The cards animate OPACITY only (not transform): the card's own :hover scale lives on
+   transform, and an entrance animation with a fill would sit on top of it and kill the hover.
+   The upward slide is done by the grid as a whole instead. */
+.main :global([class*="GamesList_grid"]) {
+  animation: gamesIn 0.5s var(--ease) both;
+  animation-delay: 0.06s;
+}
+.main :global([class*="GamesList_card"]) {
+  animation: fadeIn 0.45s var(--ease) both;
+}
+.main :global([class*="GamesList_card"]):nth-child(1) { animation-delay: 0.12s; }
+.main :global([class*="GamesList_card"]):nth-child(2) { animation-delay: 0.2s; }
+.main :global([class*="GamesList_card"]):nth-child(3) { animation-delay: 0.28s; }
+.main :global([class*="GamesList_card"]):nth-child(4) { animation-delay: 0.36s; }
+.main :global([class*="GamesList_card"]):nth-child(5) { animation-delay: 0.44s; }
+.main :global([class*="GamesList_card"]):nth-child(n + 6) { animation-delay: 0.52s; }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .head,
+  .main :global([class*="GamesList_grid"]),
+  .main :global([class*="GamesList_card"]) {
+    animation: none;
+  }
 }

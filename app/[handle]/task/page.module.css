@@ -1,0 +1,228 @@
+/* Public task page — one centered column: who you're setting a task for, the deal, the form,
+   then what's already on the list. Backdrop comes from the streamer's task design. */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.col {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 40px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.handle {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.live {
+  color: var(--text-2);
+}
+
+.headline {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  margin-top: 8px;
+  max-width: 24ch;
+}
+.desc {
+  font-size: 16px;
+  color: var(--text-2);
+  max-width: 48ch;
+}
+.form {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+.customAmount {
+  width: 110px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-size: 15px;
+}
+.customAmount:focus {
+  outline: none;
+  border-color: rgba(235, 233, 244, 0.32);
+}
+/* no native up/down arrows — they crowd the pill and this sits next to preset chips, not a stepper */
+.customAmount {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.customAmount::-webkit-outer-spin-button,
+.customAmount::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* The primary action stays the flat accent, not the gradient: the gradient is reserved for the
+   site's 2–3 hero moments (design charter), and a whole page CTA in it read as loud here. */
+.send {
+  background: var(--accent);
+}
+.send:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.send:active:not(:disabled) {
+  background: var(--accent-down);
+}
+
+/* What this task does to your standing with them — the amount above IS the gain ($1 = 1 point). */
+.rep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--bg-0);
+}
+.repLabel {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.repVals {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.repNow {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.repArrow {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.repNext {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+/* only shown when this task actually lifts you into a new tier */
+.repTier {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* What's already in flight — proof the page is live, and that the queue cap is real. */
+.queue {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: var(--r-3);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+.task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-radius: var(--r-2);
+  background: var(--bg-0);
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.taskText {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-1);
+  text-align: left;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.taskAmt {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.socials {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.socials a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+.socials a:hover {
+  color: var(--text-1);
+}
+
+.shareRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.qrBox {
+  padding: 14px;
+  border-radius: var(--r-2);
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+.footer {
+  margin-top: 28px;
+  opacity: 0.7;
+}
+
+@media (max-width: 460px) {
+  .col {
+    padding: 24px 16px 28px;
+    gap: 10px;
+  }
+  .headline {
+    font-size: 22px;
+  }
+  .desc {
+    font-size: 14px;
+  }
+}

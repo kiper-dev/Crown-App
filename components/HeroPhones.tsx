@@ -1,17 +1,32 @@
-import { Mono } from "./Mono";
+import Link from "next/link";
+import { FundraiserFill } from "./FundraiserFill";
+import { RouletteWheel } from "./RouletteWheel";
+import type { RouletteSuggestion } from "@/lib/data/roulette-mock";
 import styles from "./HeroPhones.module.css";
 
-// Three fanned phone mockups for the hero — the same product from three angles:
-// the viewer's donate page (left), the streamer's live earnings (center, raised),
-// and all-time growth (right, dark). Static decoration, not live components.
+// The center phone shows the REAL wheel component (same SVG the roulette page renders), not a
+// CSS-circle lookalike — leader slice on the accent gradient, proportional slices = odds.
+const HERO_ROUND: RouletteSuggestion[] = [
+  { id: "s1", title: "Warcraft III", genre: "Strategy", pool: 1000, backers: 6, suggestedBy: "Timur" },
+  { id: "s2", title: "Fortnite", genre: "Shooter", pool: 500, backers: 4, suggestedBy: "anna_k" },
+  { id: "s3", title: "Dota 2", genre: "Strategy", pool: 100, backers: 2, suggestedBy: "Dan" },
+];
 
-const DAY_BARS = [38, 26, 54, 44, 30, 72, 58]; // center: donations by day, one highlighted
-const GROWTH_BARS = [6, 9, 13, 11, 17, 22, 19, 27, 34, 30, 41, 48, 44, 56, 68, 62, 78, 90]; // right: all-time climb
+// Three fanned phone mockups for the hero — one per mini-game, mirroring the REAL public pages
+// (same headline/wheel/pot-card, same crown-fill fundraiser) so the hero shows the actual
+// product, not a lookalike. Each phone links to that game's own page in the catalog (/games/<id>,
+// games.ts hasPage) — what the game IS — rather than to one seeded streamer's live page, which
+// is a demo, not an explanation.
+
+// 13:37 — "leet". The stock mockup time is Apple's 9:41 (the hour the first iPhone was unveiled);
+// borrowing their easter egg in our own hero was a wasted slot, so the phones tell gamer time
+// instead. Reads as a plain clock to anyone who doesn't know, which is the point of an easter egg.
+const CLOCK = "13:37";
 
 function StatusBar({ dark = false }: { dark?: boolean }) {
   return (
     <div className={`${styles.status}${dark ? " " + styles.statusDark : ""}`}>
-      <span className={styles.time}>9:41</span>
+      <span className={styles.time}>{CLOCK}</span>
       <span className={styles.statusIcons}>
         <span className={styles.bars} />
         <span className={styles.battery} />
@@ -22,81 +37,81 @@ function StatusBar({ dark = false }: { dark?: boolean }) {
 
 export function HeroPhones() {
   return (
-    <div className={styles.phones} aria-hidden>
-      {/* LEFT — the viewer's donation page */}
-      <div className={`${styles.phone} ${styles.side} ${styles.left}`}>
+    <div className={styles.phones}>
+      {/* LEFT — Task for donation (mirrors the task widget on the streamer page) */}
+      <Link href="/games/task" aria-label="See the Task for donation game" className={`${styles.phone} ${styles.side} ${styles.left}`}>
         <span className={styles.notch} />
         <div className={styles.screen}>
           <StatusBar />
-          <div className={styles.donateScreen}>
-            <Mono name="Kira" size={52} />
-            <div className={styles.donName}>Kira</div>
-            <div className={styles.donHandle}>@kira</div>
-            <div className={styles.chips}>
-              <span className={styles.chip}>1 $</span>
-              <span className={`${styles.chip} ${styles.chipActive}`}>5 $</span>
-              <span className={styles.chip}>10 $</span>
+          <div className={`${styles.game} ${styles.gameLeft}`}>
+            <div className={styles.eyebrow}>Task for donation</div>
+            <div className={styles.taskCard}>
+              <div className={styles.taskQuote}>“Beat the boss with no armor.”</div>
+              <div className={styles.taskAmt}>$50</div>
+              <div className={styles.escrow}>
+                <span className={styles.escrowDot} />
+                Held in escrow
+              </div>
             </div>
-            <div className={styles.donateBtn}>Donate 5 $</div>
-            <div className={styles.donNote}>Straight to Kira's wallet</div>
+            <div className={styles.cta}>Set the task</div>
           </div>
         </div>
-      </div>
+      </Link>
 
-      {/* CENTER — the streamer's live earnings */}
-      <div className={`${styles.phone} ${styles.center}`}>
+      {/* CENTER — Roulette (mirrors the roulette page: headline, wheel, pot card) */}
+      <Link href="/games/roulette" aria-label="See the Roulette game" className={`${styles.phone} ${styles.center}`}>
         <span className={styles.notch} />
         <div className={styles.screen}>
           <StatusBar />
-          <div className={styles.earnScreen}>
-            <div className={styles.earnTop}>
-              <Mono name="Kira" size={22} />
-              <span className={styles.earnLabel}>Received · July</span>
+          <div className={styles.game}>
+            <div className={styles.eyebrow}>
+              Roulette · <em className={styles.open}>round open</em>
             </div>
-            <div className={styles.bigNum}>
-              $9,128<span className={styles.cents}>.74</span>
+            <h3 className={styles.headline}>You pick what I play next</h3>
+            <div className={styles.wheelWrap}>
+              <RouletteWheel round={HERO_ROUND} size={176} compact />
             </div>
-            <div className={styles.delta}>
-              <span className={styles.deltaDot} />
-              +$50 from Timur · just now
-            </div>
-            <div className={styles.tags}>
-              <span className={styles.tag}>+$50 Timur</span>
-              <span className={styles.tag}>+$10 Max</span>
-            </div>
-            <div className={styles.chart}>
-              {DAY_BARS.map((h, i) => (
-                <span key={i} className={`${styles.bar}${i === 5 ? " " + styles.barHot : ""}`} style={{ height: `${h}%` }} />
-              ))}
-            </div>
-            <div className={styles.tabs}>
-              <span className={`${styles.tab} ${styles.tabActive}`}>1W</span>
-              <span className={styles.tab}>1M</span>
-              <span className={styles.tab}>1Y</span>
-              <span className={styles.tab}>All</span>
+            <div className={styles.roundCard}>
+              <div className={styles.roundHead}>
+                <span>This round · 29:11 left</span>
+                <span className={styles.pot}>$1,600 in the pot</span>
+              </div>
+              <div className={styles.rouRow}>
+                <span className={styles.rouName}>Warcraft III</span>
+                <span className={styles.rouBar}>
+                  <span style={{ width: "63%" }} />
+                </span>
+                <span className={styles.rouPct}>63%</span>
+              </div>
+              <div className={styles.rouRow}>
+                <span className={styles.rouName}>Fortnite</span>
+                <span className={styles.rouBar}>
+                  <span style={{ width: "31%" }} />
+                </span>
+                <span className={styles.rouPct}>31%</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Link>
 
-      {/* RIGHT — all-time growth, dark */}
-      <div className={`${styles.phone} ${styles.side} ${styles.right}`}>
+      {/* RIGHT — Fundraiser, dark (mirrors the real page: crown fills bottom-up by pct) */}
+      <Link href="/games/fundraiser" aria-label="See the Fundraiser game" className={`${styles.phone} ${styles.side} ${styles.right}`}>
         <span className={styles.notch} />
         <div className={`${styles.screen} ${styles.screenDark}`}>
           <StatusBar dark />
-          <div className={styles.growthScreen}>
-            <div className={styles.growthLabel}>All-time received</div>
-            <div className={styles.growthNum}>$48,920</div>
-            <div className={styles.growthSub}>+$3,120 this week</div>
-            <div className={styles.growthChart}>
-              {GROWTH_BARS.map((h, i) => (
-                <span key={i} className={styles.gbar} style={{ height: `${h}%` }} />
-              ))}
+          <div className={`${styles.game} ${styles.frGame} ${styles.gameRight}`}>
+            <div className={styles.eyebrow}>Fundraiser</div>
+            <div className={styles.frPledge}>New mic for the stream</div>
+            <FundraiserFill pct={0.72} size={154} />
+            <div className={styles.frPct}>72%</div>
+            <div className={styles.frSums}>
+              <b>$1,440</b> of $2,000
             </div>
-            <div className={styles.growthFoot}>Top donator · Timur</div>
+            <div className={styles.cta}>Chip in</div>
           </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 }

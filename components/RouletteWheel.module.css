@@ -2,11 +2,14 @@
   position: relative;
   flex: none;
   max-width: 100%; /* the svg keeps its aspect, so a narrow phone just gets a smaller wheel */
+  aspect-ratio: 1 / 1; /* stay square as the width caps down on narrow parents (no fixed height) */
 }
 .svg {
   width: 100%;
   height: 100%;
   display: block;
+  /* the wheel floats on a soft accent pool of light instead of sitting flat on the page */
+  filter: drop-shadow(0 0 28px rgba(139, 124, 246, 0.16)) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.35));
 }
 
 .wheel {
@@ -44,6 +47,9 @@
   font-size: 10.5px;
   font-weight: 600;
   fill: var(--text-1);
+  paint-order: stroke;
+  stroke: rgba(15, 14, 20, 0.45);
+  stroke-width: 2px;
   text-anchor: middle;
   dominant-baseline: middle;
   letter-spacing: 0.01em;
@@ -51,17 +57,39 @@
   pointer-events: none; /* hover/click belong to the slice underneath */
 }
 
+/* the winner's label sits on the light end of the gradient — ink, not white */
+.labelLead {
+  fill: #0f0e14;
+  stroke: rgba(244, 242, 254, 0.5);
+}
+
 .rim {
   fill: none;
-  stroke: var(--line-strong);
+  stroke: rgba(235, 233, 244, 0.22);
+  stroke-width: 2;
+}
+.rimGlow {
+  fill: none;
+  stroke: var(--grad-top, #8b7cf6);
+  stroke-width: 1;
+  opacity: 0.35;
+}
+.hubOuter {
+  fill: #0f0e14;
+  stroke: rgba(235, 233, 244, 0.22);
   stroke-width: 1.5;
 }
 .hub {
-  fill: var(--bg-0);
-  stroke: var(--line-strong);
-  stroke-width: 1.5;
+  fill: var(--bg-2);
+}
+.hubDot {
+  fill: var(--grad-top, #8b7cf6);
 }
 /* The pointer is white — it marks the result, and results (like money) read white here. */
 .pointer {
   fill: var(--text-1);
+}
+.pointerSeam {
+  fill: #0f0e14;
+  opacity: 0.85;
 }

@@ -4,13 +4,14 @@
 .page {
   min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
 }
 
 .col {
   width: 100%;
   max-width: 1060px;
-  padding: 48px 24px 40px;
+  margin: 0 auto;
+  padding: 40px 24px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,6 +53,37 @@
   }
 }
 
+/* Phone: tighten everything so the whole page fits without a wall of scrolling —
+   smaller paddings, headline and gaps, and a wheel capped well under the screen width. */
+@media (max-width: 460px) {
+  .col {
+    padding: 24px 16px 28px;
+    gap: 10px;
+  }
+  .headline {
+    font-size: 22px;
+    margin-top: 4px;
+  }
+  .desc {
+    font-size: 14px;
+  }
+  .layout {
+    gap: 10px 0;
+    margin-top: 10px;
+  }
+  .wheelCol {
+    max-width: 260px;
+    gap: 10px;
+  }
+  .roundCard {
+    margin-top: 8px;
+    padding: 14px;
+  }
+  .footer {
+    margin-top: 18px;
+  }
+}
+
 .who {
   display: flex;
   align-items: center;
@@ -83,11 +115,6 @@
   font-size: 16px;
   color: var(--text-2);
   max-width: 48ch;
-}
-.ruleNote {
-  font-size: 14px;
-  color: var(--text-3);
-  max-width: 46ch;
 }
 
 .verdict {
@@ -273,4 +300,14 @@
 .footer {
   margin-top: 28px;
   opacity: 0.7;
+}
+
+/* One centred column under the top toggle — the wheel or the suggest form, never both at once. */
+.panel {
+  width: 100%;
+  max-width: 560px;
+  margin: 8px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

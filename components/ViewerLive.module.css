@@ -1,0 +1,115 @@
+.wrap {
+  width: 100%;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+}
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  animation: livePulse 1.8s var(--ease) infinite;
+}
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--accent-soft); }
+  50% { box-shadow: 0 0 0 6px var(--accent-soft); }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color var(--dur-1) var(--ease);
+}
+.card:hover {
+  border-color: var(--line-strong);
+}
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+}
+.cardTitle {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-1);
+}
+.stat {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.stat b {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.blurb {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.bar {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  background: var(--accent-grad, var(--accent));
+  border-radius: var(--r-pill);
+  transition: width var(--dur-2) var(--ease);
+}
+.tlist {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.titem {
+  font-size: 13.5px;
+  color: var(--text-2);
+  padding: 8px 10px;
+  background: var(--bg-0);
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spacer {
+  flex: 1;
+}
+.cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--r-2);
+  background: var(--accent-grad, var(--accent));
+  color: var(--accent-grad-ink, #0f0e14);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter var(--dur-1) var(--ease);
+}
+.cta:hover {
+  filter: brightness(1.05);
+}

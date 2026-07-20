@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Mono } from "@/components/Mono";
 import { StatTile } from "@/components/ops";
 import { DEFAULT_TASK_CONFIG } from "@/components/TaskGameSettings";
-import { readTasks, setTaskState, taskTotals, type GameTask, type TaskState } from "@/lib/data/tasks";
+import { readTasks, setTaskState, removeTask, taskTotals, type GameTask, type TaskState } from "@/lib/data/tasks";
+import { useCrown } from "@/lib/data/DataProvider";
 import type { Profile } from "@/lib/data/types";
 import styles from "./GameOverview.module.css";
 
@@ -18,11 +19,13 @@ const STATE_PILL: Record<TaskState, { tone: string; label: string }> = {
 };
 
 // The streamer's live queue of paid tasks — the moment of the game the settings only describe.
-// Approve to start the clock, complete to keep the money, or refund it to the viewer. State
-// lives in the shared mock store (lib/data/tasks.ts), so actions actually stick.
-export function TaskOverview({ profile }: { profile: Profile }) {
-  const handle = profile.handle;
+// Approve to start the clock, complete to keep the money, or refund it to the viewer.
+// A COMPLETED task leaves this queue for good: its money becomes a donation in the feed
+// (source: "task"), so afterwards it lives where money lives — the Donations tab.
+export function TaskOverview({ profile, scope }: { profile: Profile; scope?: string }) {
+  const handle = scope ?? profile.handle;
   const cfg = profile.taskConfig ?? DEFAULT_TASK_CONFIG;
+  const { feed, applyMockDonation } = useCrown();
   const [tasks, setTasks] = useState<GameTask[]>([]);
 
   useEffect(() => setTasks(readTasks(handle)), [handle]);
@@ -31,25 +34,37 @@ export function TaskOverview({ profile }: { profile: Profile }) {
     setTasks(setTaskState(handle, id, state));
   }
 
+  // Complete: the escrow settles — money to the streamer, reputation to the viewer, a feed
+  // entry with source "task" — and the row disappears from this queue.
+  function complete(t: GameTask) {
+    applyMockDonation({ handle: profile.handle, amount: t.amount, name: t.from, message: t.text, source: "task" });
+    setTasks(removeTask(handle, t.id));
+  }
+
   const totals = taskTotals(tasks);
+  // Earned = every task that ever settled into the feed, not just this queue's leftovers.
+  const earned = feed.filter((d) => d.source === "task").reduce((sum, d) => sum + d.amount, 0);
+  // Completed tasks are gone (they're in Donations); seeded "done" rows hide by the same rule.
+  const shown = tasks.filter((t) => t.state !== "done");
 
   return (
     <div className={styles.col}>
       <div className="footnote">
-        Approve a task to start its clock, complete it to keep the money, or refund it to the viewer.
+        Approve a task to start its clock, complete it to keep the money, or refund it to the viewer. Completed
+        tasks move to Donations.
       </div>
 
       <div className="stat-grid">
         <StatTile k="Awaiting you" v={String(totals.pending)} />
         <StatTile k="Active" v={`${totals.active} / ${cfg.maxActiveTasks}`} />
-        <StatTile k="Earned" v={`${totals.earned} $`} />
+        <StatTile k="Earned" v={`${earned} $`} />
       </div>
 
-      {tasks.length === 0 ? (
+      {shown.length === 0 ? (
         <div className="empty-log">No tasks yet — share your task page so viewers can set you one.</div>
       ) : (
         <div className={styles.list}>
-          {tasks.map((t) => {
+          {shown.map((t) => {
             const pill = STATE_PILL[t.state];
             const resolved = t.state === "done" || t.state === "refunded";
             return (
@@ -58,7 +73,10 @@ export function TaskOverview({ profile }: { profile: Profile }) {
                 <div className={styles.rowMain}>
                   <div className={styles.rowTop}>
                     <span className={styles.who}>{t.from}</span>
-                    <span className={styles.when}>{t.when}</span>
+                    <span className={styles.when}>
+                      {t.when}
+                      {t.durationHours ? ` · ${t.durationHours}h window` : ""}
+                    </span>
                   </div>
                   <div className={styles.text}>{t.text}</div>
                   {t.state === "pending" && (
@@ -73,7 +91,7 @@ export function TaskOverview({ profile }: { profile: Profile }) {
                   )}
                   {t.state === "active" && (
                     <div className={styles.actions}>
-                      <button type="button" className="btn" onClick={() => act(t.id, "done")}>
+                      <button type="button" className="btn" onClick={() => complete(t)}>
                         Mark done
                       </button>
                       <button type="button" className="btn-outline" onClick={() => act(t.id, "refunded")}>

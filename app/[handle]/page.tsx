@@ -5,6 +5,8 @@ import { useCrown } from "@/lib/data/DataProvider";
 import { tierInfo } from "@/lib/level";
 import { Logo } from "@/components/Logo";
 import { DonateForm } from "@/components/DonateForm";
+import { Feed } from "@/components/Feed";
+import { ViewerLive } from "@/components/ViewerLive";
 import { Mono } from "@/components/Mono";
 import { SocialIcon, SOCIAL_LABEL } from "@/components/icons";
 import { normalizeSocialLink } from "@/lib/data/social-links";
@@ -18,7 +20,7 @@ export default function StreamerPage({ params }: { params: { handle: string } })
     return (
       <main className="page">
         <div className="center-note">
-          <h1>No such streamer</h1>
+          <h1>No such content maker</h1>
           <p>Check the link — there might be a typo in the handle.</p>
           <Link className="btn" href="/">
             Back to home
@@ -31,11 +33,14 @@ export default function StreamerPage({ params }: { params: { handle: string } })
   const reputation = getReputation(streamer.handle);
   const lastGain = lastGainFor(streamer.handle);
   const { current, next } = tierInfo(reputation, streamer.tiers);
+  // Progress toward the next tier: from the current tier's threshold (or 0) up to the next one.
+  const fromT = current?.threshold ?? 0;
+  const repPct = next ? Math.min(100, Math.max(0, Math.round(((reputation - fromT) / Math.max(1, next.threshold - fromT)) * 100))) : 100;
 
   return (
     <main className="page">
       <div className="hero">
-        <Mono name={streamer.name} size={96} />
+        <Mono name={streamer.name} size={96} src={streamer.avatarUrl} />
         <h1>{streamer.name}</h1>
         <div className="handle">@{streamer.handle}</div>
         <p className="bio">{streamer.bio}</p>
@@ -54,13 +59,19 @@ export default function StreamerPage({ params }: { params: { handle: string } })
         </div>
       </div>
 
-      <div className="cols">
-        <div className="stack">
+      <div className="viewer-body">
+        <div className="viewer-main">
+          <ViewerLive handle={streamer.handle} name={streamer.name} />
           <DonateForm handle={streamer.handle} defaultAmount={5} streamerName={`${streamer.name}'s wallet`} presets={streamer.donatePresets} />
+        </div>
 
+        <aside className="viewer-side">
           <div className="card rep-card">
             <div className="rep-title">Your reputation with {streamer.name}</div>
-            <div className="rep-num num">{reputation}</div>
+            <div className="rep-num num">
+              {reputation}
+              <span className={`rep-gain num${lastGain ? " show" : ""}`}>{lastGain ? `+${lastGain}` : ""}</span>
+            </div>
             <div className="rep-level">
               {current ? (
                 <span className="tier-badge">
@@ -70,12 +81,26 @@ export default function StreamerPage({ params }: { params: { handle: string } })
               ) : (
                 "No tier yet"
               )}
-              {next ? ` · ${next.name} — from ${next.threshold}` : ""}
             </div>
-            <span className={`rep-gain num${lastGain ? " show" : ""}`}>{lastGain ? `+${lastGain} just now` : ""}</span>
-            <div className="rep-hint">+1 reputation for every dollar donated</div>
+            {next ? (
+              <div className="rep-progress">
+                <div className="rep-track">
+                  <div className="rep-fill" style={{ width: `${repPct}%` }} />
+                </div>
+                <div className="rep-next">
+                  {next.threshold - reputation} more to <b>{next.name}</b>
+                </div>
+              </div>
+            ) : (
+              <div className="rep-hint">Top tier reached 👑</div>
+            )}
+            <div className="rep-hint">+1 reputation for every dollar you donate to {streamer.name}.</div>
           </div>
-        </div>
+
+          <div className="card">
+            <Feed title="Recent supporters" limit={8} />
+          </div>
+        </aside>
       </div>
 
       <div className="page-footer">

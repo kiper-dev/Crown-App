@@ -24,8 +24,12 @@ function money(v: number) {
   return `${Math.round(v).toLocaleString("en-US")} $`;
 }
 
-// Line view — same points as the bars, but a curve. Money = white (charter), same as the peak bar.
-// hover is the index the pointer is over (null = not hovering): draws a crosshair + dot at that point.
+// Line view — an area chart in the accent, drawn like the reference: the stroke and the fill both
+// ride a vertical gradient that's brightest at the top and fades toward the bottom, over faint
+// horizontal gridlines, with a single dot on the peak (the all-time high) — no dot on the end of the
+// line. hover (null = none) draws a crosshair + dot at that index.
+const GRID_LINES = 6;
+
 function LineView({
   days,
   max,
@@ -41,7 +45,7 @@ function LineView({
 }) {
   const W = 100;
   const H = 100;
-  const top = 6; // top margin so the peak doesn't hit the edge
+  const top = 8; // top margin so the peak dot doesn't clip the edge
   const step = days.length > 1 ? W / (days.length - 1) : W;
   const pts = days.map((v, i) => [i * step, H - (v / max) * (H - top)] as const);
   const line = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
@@ -51,19 +55,46 @@ function LineView({
 
   return (
     <div style={{ paddingTop: 32 }}>
-      <div style={{ height: 160, position: "relative" }}>
+      <div style={{ height: 168, position: "relative" }}>
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }} aria-hidden>
           <defs>
+            {/* brighter at the top, darker toward the baseline — used for BOTH the fill and the stroke */}
             <linearGradient id="chart-line-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--text-1)" stopOpacity="0.16" />
-              <stop offset="100%" stopColor="var(--text-1)" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--accent-hover)" stopOpacity="0.45" />
+              <stop offset="55%" stopColor="var(--accent)" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="var(--accent-down)" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="chart-line-stroke" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#C9BEFF" />
+              <stop offset="60%" stopColor="var(--accent)" />
+              <stop offset="100%" stopColor="var(--accent-down)" />
             </linearGradient>
           </defs>
+
+          {/* horizontal gridlines */}
+          {Array.from({ length: GRID_LINES + 1 }, (_, i) => {
+            const y = (i / GRID_LINES) * H;
+            return <line key={i} x1={0} y1={y} x2={W} y2={y} stroke="var(--line)" strokeWidth={1} vectorEffect="non-scaling-stroke" />;
+          })}
+
           <path d={area} fill="url(#chart-line-fill)" />
-          <path d={line} fill="none" stroke="var(--text-1)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          <path
+            d={line}
+            fill="none"
+            stroke="url(#chart-line-stroke)"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
           {hp ? <line x1={hp[0]} y1={0} x2={hp[0]} y2={H} stroke="var(--line-strong)" strokeWidth={1} vectorEffect="non-scaling-stroke" /> : null}
-          {peak ? <circle cx={peak[0]} cy={peak[1]} r="1.7" fill="var(--text-1)" /> : null}
         </svg>
+
+        {/* dots sit in an overlay (percent-positioned) so they stay perfectly round despite the
+            non-uniform SVG scaling that would otherwise squash an in-SVG <circle> into an ellipse */}
+        {peak ? <span className="chart-dot" style={{ left: `${peak[0]}%`, top: `${peak[1]}%` }} /> : null}
+        {hp ? <span className="chart-dot hot" style={{ left: `${hp[0]}%`, top: `${hp[1]}%` }} /> : null}
+
         {/* peak label only when not inspecting a point — the hover tooltip takes over otherwise */}
         {peak && hover === null ? (
           <span
@@ -72,7 +103,7 @@ function LineView({
               position: "absolute",
               left: `${peak[0]}%`,
               top: `${peak[1]}%`,
-              transform: "translate(-50%, calc(-100% - 10px))",
+              transform: "translate(-50%, calc(-100% - 12px))",
               fontSize: 14,
               color: "var(--text-2)",
               whiteSpace: "nowrap",
@@ -81,7 +112,6 @@ function LineView({
             {peakLabel}
           </span>
         ) : null}
-        {hp ? <span className="mini-dot" style={{ left: `${hp[0]}%`, top: `${hp[1]}%`, background: "var(--text-1)" }} /> : null}
       </div>
     </div>
   );
@@ -155,7 +185,8 @@ export function Chart({
         {view === "bar" ? (
           <div className="chart" aria-hidden>
             {days.map((v, i) => {
-              const peak = v === peakValue;
+              // match by index, not value — ties for the max would otherwise tag every equal bar
+              const peak = i === peakIndex;
               return (
                 <div className={`col${peak ? " peak" : ""}`} key={i} style={{ opacity: hover === null || hover === i ? 1 : 0.4 }}>
                   <div className="b" style={{ height: `${Math.max((v / max) * 100, v ? 4 : 2)}%` }} />

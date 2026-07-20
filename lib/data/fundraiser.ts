@@ -2,6 +2,7 @@
 // mirroring lib/data/pagebuilder.ts for the main page builder. Data only, no React.
 
 import type { FundraiserDraft, PageWidget, Profile } from "./types";
+import { isFreshScope } from "./freshScope";
 import { DEFAULT_DESIGN } from "./pagebuilder";
 
 export const PLEDGE_MAX = 140;
@@ -94,25 +95,29 @@ const MOCK_BACKERS_TOTAL = MOCK_BACKERS.reduce((sum, b) => sum + b.amount, 0);
 
 // Raised = the seeded backers plus any real chip-ins made on the public page while testing.
 export function raisedTotal(handle: string): number {
-  return MOCK_BACKERS_TOTAL + readCollected(handle);
+  // A fresh session starts at zero — the seeded backers belong to the first scope only.
+  return (isFreshScope(handle) ? 0 : MOCK_BACKERS_TOTAL) + readCollected(handle);
 }
 
 // Backers list that adds up to raisedTotal: the seed, plus a single row for test chip-ins.
 export function readBackers(handle: string): Backer[] {
-  const list = MOCK_BACKERS.map((b) => ({ ...b }));
+  const list = isFreshScope(handle) ? [] : MOCK_BACKERS.map((b) => ({ ...b }));
   const collected = readCollected(handle);
   if (collected > 0) list.unshift({ name: "Your test chip-ins", amount: collected, when: "just now" });
   return list;
 }
 
 const STATUS_KEY = "crown-fundraiser-status";
+const FUNDRAISER_STATES: FundraiserState[] = ["collecting", "delivering", "delivered", "refunded"];
 
 export function readStatus(handle: string): FundraiserStatus {
   try {
     const raw = localStorage.getItem(`${STATUS_KEY}:${handle}`);
     if (raw) {
       const s = JSON.parse(raw);
-      if (s && typeof s.state === "string") return { state: s.state, accepted: s.accepted };
+      // Only accept a known state — an unrecognised value (corruption/tamper) would otherwise
+      // persist and wedge the campaign, since no UI transition can leave an off-enum state.
+      if (s && FUNDRAISER_STATES.includes(s.state)) return { state: s.state, accepted: s.accepted };
     }
   } catch {}
   return { state: "collecting" };

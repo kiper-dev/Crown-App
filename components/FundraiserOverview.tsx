@@ -20,8 +20,8 @@ import styles from "./GameOverview.module.css";
 // only describe. Chip-ins land in escrow (raised = seeded backers + real test chip-ins); accept
 // the amount to start the delivery clock, then deliver — or refund everyone. State sticks in the
 // shared mock store (lib/data/fundraiser.ts).
-export function FundraiserOverview({ profile }: { profile: Profile }) {
-  const handle = profile.handle;
+export function FundraiserOverview({ profile, scope }: { profile: Profile; scope?: string }) {
+  const handle = scope ?? profile.handle;
   const fr = withFundraiserDefaults(profile);
   const cfg = profile.fundraiserConfig ?? DEFAULT_FUNDRAISER_CONFIG;
 

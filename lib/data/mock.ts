@@ -10,25 +10,19 @@ const DEFAULT_TIERS: Tier[] = [
   { name: "Legend", threshold: 1000, color: "#8B7CF6" },
 ];
 
+// The demo content maker the marketing surfaces point at: the "See an example" link, the
+// footer, the hero phones and the donate demo. Named ONCE here — it used to be spelled out in
+// two dozen places, which made swapping it a hunt.
+export const DEMO_HANDLE = "nova";
+export const DEMO_NAME = "Nova";
+
 // One shared mock world (the same one used in the F1 mockups).
 export const MOCK_STREAMERS: Record<string, Streamer> = {
-  kira: {
-    handle: "kira",
-    name: "Kira",
-    bio: "Indie horrors and cozy co-ops. Streams Tue, Thu, and Sat at 7 PM MSK.",
-    address: "0x1111111111111111111111111111111111111111",
-    socials: [
-      { kind: "twitch", url: "https://twitch.tv/kira" },
-      { kind: "youtube", url: "https://youtube.com/@kira" },
-      { kind: "telegram", url: "https://t.me/kira" },
-    ],
-    tiers: DEFAULT_TIERS,
-  },
   nova: {
     handle: "nova",
     name: "Nova",
     bio: "Painting digital art live — from sketch to final piece.",
-    address: "0x2222222222222222222222222222222222222222",
+    address: "3JF3sEqM796hk5WFqA6EtmEwJQ9quALszsfJyvXNQKy3",
     socials: [
       { kind: "youtube", url: "https://youtube.com/@nova" },
       { kind: "instagram", url: "https://instagram.com/nova" },
@@ -40,7 +34,7 @@ export const MOCK_STREAMERS: Record<string, Streamer> = {
     handle: "glitch",
     name: "Glitch",
     bio: "Speedruns and retro platformers, no editing.",
-    address: "0x3333333333333333333333333333333333333333",
+    address: "4Ss5JMkXAD9Z7cktFEdrqeMuT6jGMF1pVozTyPHZ6zT4",
     socials: [
       { kind: "twitch", url: "https://twitch.tv/glitch" },
       { kind: "kick", url: "https://kick.com/glitch" },
@@ -52,7 +46,7 @@ export const MOCK_STREAMERS: Record<string, Streamer> = {
     handle: "miradev",
     name: "Mira",
     bio: "Live coding: side projects, game dev, Q&A.",
-    address: "0x4444444444444444444444444444444444444444",
+    address: "5bV6jUfhDHCQVA1WfKBUnXUsboJgoKgkzkKcxr3joew5",
     socials: [
       { kind: "youtube", url: "https://youtube.com/@miradev" },
       { kind: "telegram", url: "https://t.me/miradev" },
@@ -64,7 +58,7 @@ export const MOCK_STREAMERS: Record<string, Streamer> = {
     handle: "volk",
     name: "Wolf",
     bio: "Tactical shooters at night. I queue straight from ranked.",
-    address: "0x5555555555555555555555555555555555555555",
+    address: "6k78AbasGMFFrhG95Pj6jQbqkVt7FQMhVgemxJovWKR6",
     socials: [
       { kind: "twitch", url: "https://twitch.tv/volk" },
       { kind: "kick", url: "https://kick.com/volk" },
@@ -76,7 +70,7 @@ export const MOCK_STREAMERS: Record<string, Streamer> = {
     handle: "sonya",
     name: "Sonya",
     bio: "Music, karaoke, and cozy home concerts.",
-    address: "0x6666666666666666666666666666666666666666",
+    address: "7tj9biW3KRJ7EEWmVUGigHiouCTXhV2dzcyvwma7Cyu7",
     socials: [
       { kind: "youtube", url: "https://youtube.com/@sonya" },
       { kind: "tiktok", url: "https://tiktok.com/@sonya" },
@@ -88,7 +82,7 @@ export const MOCK_STREAMERS: Record<string, Streamer> = {
     handle: "raidkeeper",
     name: "Keeper",
     bio: "MMO raids, guides, and patch breakdowns.",
-    address: "0x7777777777777777777777777777777777777777",
+    address: "93MB2qRDNVLxbmmPuYpLdAqn3u2x9ZhaVZK5wELHueP8",
     socials: [
       { kind: "twitch", url: "https://twitch.tv/raidkeeper" },
       { kind: "x", url: "https://x.com/raidkeeper" },
@@ -100,7 +94,7 @@ export const MOCK_STREAMERS: Record<string, Streamer> = {
     handle: "pixelira",
     name: "Pixie",
     bio: "Pixel art and chill lo-fi vibes.",
-    address: "0x8888888888888888888888888888888888888888",
+    address: "AByCTxLPRZPoyK22KdMxa3xkCbcNbeNWzVeEvh6UcJs9",
     socials: [
       { kind: "instagram", url: "https://instagram.com/pixelira" },
       { kind: "tiktok", url: "https://tiktok.com/@pixelira" },
@@ -121,7 +115,6 @@ export interface RealmStat {
 }
 
 export const MOCK_REALMS: RealmStat[] = [
-  { handle: "kira", receivedAll: 48920, received7d: 3120, crown: "Timur", spark: [12, 10, 14, 13, 18, 16, 22, 20, 26, 24, 30, 28, 34, 33, 40, 44] },
   { handle: "nova", receivedAll: 31450, received7d: 2740, crown: "lesya", spark: [8, 9, 7, 11, 10, 14, 13, 17, 15, 19, 18, 22, 20, 25, 24, 28] },
   { handle: "glitch", receivedAll: 27200, received7d: 4100, crown: "Anonymous", spark: [20, 16, 22, 18, 26, 21, 15, 24, 28, 22, 30, 26, 34, 29, 38, 41] },
   { handle: "miradev", receivedAll: 19880, received7d: 1580, crown: "Dan", spark: [6, 7, 6, 9, 8, 11, 10, 9, 13, 12, 15, 14, 17, 16, 19, 20] },
@@ -134,6 +127,7 @@ export const MOCK_REALMS: RealmStat[] = [
 export const MOCK_FEED: Donation[] = [
   { id: "d1", from: "Max", amount: 10, message: "For yesterday's stream. That ending was top tier", source: "direct", date: "2026-07-14", time: "2 min ago" },
   { id: "d2", from: "anna_k", amount: 5, message: "Hey from Saint Petersburg!", source: "roulette", date: "2026-07-14", time: "34 min ago" },
+  { id: "d2a", from: "Timur", amount: 60, message: "My lot: hardest difficulty, no saves", source: "auction", date: "2026-07-14", time: "1 hour ago" },
   { id: "d3", from: "Anonymous", amount: 1, source: "direct", date: "2026-07-14", time: "1 hour ago" },
   { id: "d4", from: "Timur", amount: 50, message: "For the mic. Waiting for that hiss-free sound", source: "fundraiser", date: "2026-07-14", time: "3 hours ago" },
   { id: "d5", from: "lesya", amount: 5, message: "Thanks for the cozy streams", source: "direct", date: "2026-07-13", time: "yesterday" },
@@ -149,11 +143,11 @@ export const MOCK_FEED: Donation[] = [
 ];
 
 // A viewer's reputation with a streamer.
-export const MOCK_REPUTATION: Record<string, number> = { kira: 42 };
+export const MOCK_REPUTATION: Record<string, number> = { [DEMO_HANDLE]: 42 };
 
 export const MOCK_CAMPAIGNS: Record<string, Campaign> = {
-  "kira/mikrofon": {
-    handle: "kira",
+  "nova/mikrofon": {
+    handle: "nova",
     slug: "mikrofon",
     kind: "raise",
     title: "Raising for a new microphone",
@@ -176,14 +170,14 @@ export interface ByGameRow {
 
 // The sources the Home chart can be filtered by — a regular donation plus each mini-game.
 export type DonationSource = GameId | "direct";
-export const DONATION_SOURCES: DonationSource[] = ["direct", "task", "roulette", "fundraiser"];
+export const DONATION_SOURCES: DonationSource[] = ["direct", "task", "roulette", "fundraiser", "auction"];
 
 // Splits a period's daily totals across the sources, shaped so each game has its own curve
 // (a fixed per-source wave) while every day's columns still add up to that day's total.
 // Deterministic — no RNG — so the chart is stable across renders. The real per-source series
 // will come from the indexer; this mocks it out from the totals + the by-game breakdown.
 export function splitByGame(p: DashboardPeriod): Record<DonationSource, number[]> {
-  const out: Record<DonationSource, number[]> = { direct: [], task: [], roulette: [], fundraiser: [] };
+  const out: Record<DonationSource, number[]> = { direct: [], task: [], roulette: [], fundraiser: [], auction: [] };
   const base = Object.fromEntries(DONATION_SOURCES.map((k) => [k, 0])) as Record<DonationSource, number>;
   for (const g of p.byGame) base[g.id] = g.amount;
 
@@ -232,10 +226,11 @@ export const MOCK_DASHBOARD: Record<DashboardPeriodKey, DashboardPeriod> = {
     peakValue: 84,
     axis: ["Jul 4", "Jul 7", "Jul 10"],
     byGame: [
-      { id: "direct", amount: 258 },
+      { id: "direct", amount: 244 },
       { id: "task", amount: 46 },
       { id: "roulette", amount: 20 },
       { id: "fundraiser", amount: 8 },
+      { id: "auction", amount: 14 },
     ],
   },
   "30": {
@@ -252,10 +247,11 @@ export const MOCK_DASHBOARD: Record<DashboardPeriodKey, DashboardPeriod> = {
     peakValue: 120,
     axis: ["Jun 10", "Jun 25", "Jul 10"],
     byGame: [
-      { id: "direct", amount: 954 },
+      { id: "direct", amount: 920 },
       { id: "task", amount: 210 },
       { id: "roulette", amount: 84 },
       { id: "fundraiser", amount: 36 },
+      { id: "auction", amount: 34 },
     ],
   },
   all: {
@@ -271,10 +267,11 @@ export const MOCK_DASHBOARD: Record<DashboardPeriodKey, DashboardPeriod> = {
     peakValue: 3240,
     axis: ["Aug 2025", "Feb 2026", "Jul 2026"],
     byGame: [
-      { id: "direct", amount: 14400 },
+      { id: "direct", amount: 13920 },
       { id: "task", amount: 3600 },
       { id: "roulette", amount: 1800 },
       { id: "fundraiser", amount: 690 },
+      { id: "auction", amount: 480 },
     ],
   },
 };

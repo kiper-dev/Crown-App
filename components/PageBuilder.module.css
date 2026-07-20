@@ -87,13 +87,17 @@
    ~944px next to the phone and shrank to ~504px next to the desktop preview, so switching devices
    made the editor jump). Fixed left column → the editor never resizes; the preview column takes the
    rest, so the desktop preview can grow wide without touching the editor. */
+/* The editor is capped at its comfortable width and every remaining pixel goes to the preview:
+   the desktop frame renders a 1280px page scaled to fit, so a narrow column doesn't just crop it —
+   it shrinks the whole page into unreadable soup (a 450px column meant a 0.35 scale). */
 .builder {
   display: grid;
-  grid-template-columns: minmax(420px, 500px) minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: 420px minmax(0, 1fr);
+  gap: 28px;
   align-items: start;
 }
-@media (max-width: 980px) {
+/* Below this the two columns can't both be useful — stack them and let the preview span the width. */
+@media (max-width: 1180px) {
   .builder {
     grid-template-columns: 1fr;
   }

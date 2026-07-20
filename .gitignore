@@ -8,3 +8,10 @@ next-env.d.ts.timestamp
 .DS_Store
 .env*.local
 npm-debug.log*
+
+# telegram bot local store
+/bot/data
+/bot/.env
+
+# Crown DB (SQLite) — data lives on the server, never in git
+/data/

@@ -1,5 +1,5 @@
-/* One mini-game's own page. Only design-charter tokens: one purple accent, no gold.
-   Top navigation is the shared <TopNav> component — do not re-add a header here. */
+/* One mini-game's own page — the same template for every game. Only design-charter tokens:
+   one purple accent, no gold. Top navigation is the shared <TopNav> — do not re-add a header here. */
 .wrap {
   min-height: 100vh;
   display: flex;
@@ -8,89 +8,260 @@
 
 .main {
   width: 100%;
-  max-width: 760px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 32px 24px 80px;
+  padding: 28px 40px 80px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 }
-
-.back {
-  align-self: flex-start;
-  font-size: 15px;
-  color: var(--text-2);
-  text-decoration: none;
-}
-.back:hover {
-  color: var(--text-1);
-}
-
-/* Hero: a placeholder cover (gradient + icon) until a real screenshot exists —
-   coverUrl in games.ts swaps it in without touching this markup. */
-.cover {
-  height: 220px;
-  border-radius: var(--r-3);
-  border: 1px solid var(--line);
-  background-image: linear-gradient(155deg, var(--bg-2), var(--bg-1) 55%, #0f0e14);
-  background-size: cover;
-  background-position: center;
-  display: grid;
-  place-items: center;
-  color: var(--text-3);
-}
-
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.head h1 {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.tagline {
-  font-size: 18px;
-  color: var(--text-2);
-  max-width: 60ch;
-}
-
-.section h2 {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 10px;
-}
-.section p {
-  font-size: 16px;
-  color: var(--text-2);
-  max-width: 65ch;
-}
-
-/* auto-fit, not a fixed 3 columns: games have different step counts (Task has
-   3, Roulette has 4, …) — this fills the row instead of stranding a lone item. */
-.steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 20px;
-}
-@media (max-width: 640px) {
-  .steps {
-    grid-template-columns: 1fr;
+@media (max-width: 1100px) {
+  .main {
+    padding: 24px 20px 64px;
   }
 }
 
+
+/* ---- hero ---- */
+.hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.icon {
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--r-2);
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  border: 1px solid var(--line-strong);
+  color: var(--accent);
+}
+.heroCopy {
+  min-width: 0;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.head h1 {
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.tagline {
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-2);
+  max-width: 62ch;
+  margin-top: 8px;
+}
+
+/* ---- two columns: reading on the left, the demo playing alongside ---- */
+/* Info on the left, the playable sim on the right — the sim gets the bigger half, it's the point
+   of the page. Not sticky: it's taller than the viewport once it's running. */
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 48px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .cols {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  /* on narrow screens the sim leads — playing it explains the game faster than the text does */
+  .right {
+    order: -1;
+  }
+}
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  min-width: 0;
+}
+.right {
+  min-width: 0;
+}
+
+/* ---- pitch: three headline facts where a wall of prose used to be ---- */
+.pitch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .pitch {
+    grid-template-columns: 1fr;
+  }
+}
+.pitchCard {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.pitchCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.pitchLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.pitchValue {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.h2 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+/* ---- rules: numbered, with the streamer's knobs marked inline (see RuleLine) ---- */
+.rulesHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.legendChip {
+  width: 22px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  border-bottom: 1px dashed var(--accent);
+}
+.rules {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rule {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+}
+.ruleNum {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  transform: translateY(3px);
+}
+.ruleText {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-2);
+}
+
+/* ---- what you control ---- */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+}
+.control {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: 14px;
+  transition: border-color var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.control:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+.controlTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.controlLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.controlValue {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: var(--r-1);
+  background: var(--accent-soft);
+  border-bottom: 1px dashed var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.controlHint {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+.note {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* ---- CTA ---- */
 .cta {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  padding-top: 8px;
+  padding-top: 20px;
   border-top: 1px solid var(--line);
 }

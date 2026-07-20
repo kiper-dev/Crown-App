@@ -16,4 +16,5 @@ export const SOURCE_LABEL: Record<GameId | "direct", string> = {
   task: "Task for donation",
   roulette: "Roulette",
   fundraiser: "Fundraiser",
+  auction: "Auction",
 };

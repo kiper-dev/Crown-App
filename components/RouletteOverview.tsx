@@ -19,8 +19,8 @@ function fmtLeft(ms: number): string {
 // the spec gives the content maker — spin early ("решение КМ") or open a fresh round. The
 // round itself (suggestions, clock, verdict) lives in the shared mock storage, so this and
 // the public page stay in step.
-export function RouletteOverview({ profile }: { profile: Profile }) {
-  const handle = profile.handle;
+export function RouletteOverview({ profile, scope, shareQuery = "" }: { profile: Profile; scope?: string; shareQuery?: string }) {
+  const handle = scope ?? profile.handle;
   const cfg = profile.rouletteConfig ?? DEFAULT_ROULETTE_CONFIG;
 
   const [round, setRound] = useState<RouletteSuggestion[]>([]);
@@ -45,7 +45,11 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
     const m = readRoundMeta(handle);
     if (!m) return;
     if (m.startedAt !== meta.startedAt) {
+      // A fresh round started (here or elsewhere): drop the finished round's spin, otherwise
+      // `spinning` (spin.nonce > 0 && no winner) stays stuck true and disables "Spin now".
       setMeta(m);
+      setSpin({ id: "", nonce: 0 });
+      spunFor.current = null;
       return;
     }
     if (m.winner && !meta.winner && spunFor.current !== m.startedAt) {
@@ -60,14 +64,15 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
   const msLeft = meta && now ? deadline - now : 1;
   const expired = msLeft <= 0;
   const spinning = spin.nonce > 0 && !meta?.winner;
+  const rankMode = meta?.mode === "rank";
   // Nothing pitched yet and no verdict — an empty wheel says nothing, so we show a share prompt instead.
-  const empty = !meta?.winner && total === 0;
+  const empty = !meta?.winner && round.length === 0;
 
   // Время вышло — the wheel spins itself, same as on the public page.
   useEffect(() => {
     if (!now || !meta || meta.winner || !expired) return;
     if (spunFor.current === meta.startedAt) return;
-    if (!total) {
+    if (!round.length) {
       setMeta(newRound(handle));
       return;
     }
@@ -76,7 +81,7 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
   }, [now, meta, expired]);
 
   function spinNow() {
-    if (!meta || meta.winner || !total || spunFor.current === meta.startedAt) return;
+    if (!meta || meta.winner || !round.length || spunFor.current === meta.startedAt) return;
     const w = pickWeighted(readRound(handle), Math.random());
     if (!w) return;
     spunFor.current = meta.startedAt;
@@ -91,7 +96,7 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
     // Record the finished round exactly once, so the History tab shows real rounds — not just the seed.
     if (meta && recordedFor.current !== meta.startedAt) {
       recordedFor.current = meta.startedAt;
-      appendHistory(handle, {
+      appendHistory(profile.handle, {
         id: `r-${meta.startedAt}`,
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
         winner: w.title,
@@ -106,6 +111,10 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
   function startNewRound() {
     setMeta(newRound(handle));
     setRound(readRound(handle));
+    // Clear the previous round's spin so the fresh round isn't stuck in "Spinning…".
+    setSpin({ id: "", nonce: 0 });
+    spunFor.current = null;
+    recordedFor.current = null;
   }
 
   return (
@@ -117,7 +126,7 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
       {empty ? (
         <div className="empty-log">
           No suggestions yet — viewers pitch a game on your{" "}
-          <Link href={`/@${handle}/roulette`} target="_blank" style={{ color: "var(--accent)" }}>
+          <Link href={`/@${profile.handle}/roulette${shareQuery}`} target="_blank" style={{ color: "var(--accent)" }}>
             roulette page
           </Link>
           . Each one is a donation toward what they want you to play.
@@ -126,7 +135,7 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
         <>
           <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
             <RouletteWheel
-              round={round}
+              round={rankMode ? round.map((x) => ({ ...x, pool: x.pool || 1 })) : round}
               spinToId={spin.id || null}
               spinNonce={spin.nonce}
               onLanded={landed}
@@ -155,7 +164,7 @@ export function RouletteOverview({ profile }: { profile: Profile }) {
 
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!meta?.winner ? (
-                  <button className="btn" type="button" disabled={!total || spinning} onClick={spinNow}>
+                  <button className="btn" type="button" disabled={!round.length || spinning} onClick={spinNow}>
                     {spinning ? "Spinning…" : "Spin now"}
                   </button>
                 ) : (

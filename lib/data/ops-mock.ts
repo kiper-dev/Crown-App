@@ -78,11 +78,12 @@ export const OPS_GROWTH_BY_GAME: Record<GameId, number[]> = {
   ],
   roulette: new Array(28).fill(0),
   fundraiser: new Array(28).fill(0),
+  auction: new Array(28).fill(0),
 };
 
 // Tasks (escrow) by status — for the summary.
 export const OPS_TASK_STATUS = [
-  { label: "Awaiting streamer", value: 3, tone: "wait" as const },
+  { label: "Awaiting content maker", value: 3, tone: "wait" as const },
   { label: "In progress", value: 2, tone: "wait" as const },
   { label: "In review", value: 2, tone: "wait" as const },
   { label: "Dispute", value: 1, tone: "attn" as const },
@@ -115,19 +116,18 @@ export const OPS_STREAMERS: StreamerRow[] = [
   { handle: "beatlab", name: "BEATLAB", socials: ["youtube", "instagram", "twitch"], received: 8240, d7: 740, donators: 4, live: false },
   { handle: "paintpal", name: "PAINTPAL", socials: ["youtube", "twitch"], received: 7880, d7: 380, donators: 3, live: false },
   { handle: "talehunter", name: "TALEHUNTER", socials: ["twitch", "youtube", "kick"], received: 7550, d7: 650, donators: 4, live: false },
-  { handle: "kira", name: "KIRA", socials: ["twitch", "youtube", "telegram"], received: 5830, d7: 90, donators: 4, live: false },
 ];
 
 export type TaskStatus = "await" | "progress" | "review" | "dispute" | "vote" | "refund" | "paid";
 
 export const TASK_STATUS_META: Record<TaskStatus, { label: string; tone: "wait" | "attn" | "ok" | "bad"; note?: string }> = {
-  await: { label: "Awaiting streamer", tone: "wait" },
+  await: { label: "Awaiting content maker", tone: "wait" },
   progress: { label: "In progress", tone: "wait" },
   review: { label: "Review window", tone: "wait" },
   dispute: { label: "Dispute", tone: "attn" },
   vote: { label: "Vote", tone: "attn" },
   refund: { label: "Refunded to donator", tone: "bad", note: "not completed" },
-  paid: { label: "Paid to streamer", tone: "ok", note: "completed" },
+  paid: { label: "Paid to content maker", tone: "ok", note: "completed" },
 };
 
 export type TaskRow = {
@@ -161,21 +161,21 @@ export type DonatorRow = {
 };
 
 export const OPS_DONATORS: DonatorRow[] = [
-  { addr: "0x7a3f…c21b", donated: 1240, reputation: 1240, streamers: 5, last: "2 min ago" },
-  { addr: "0x11de…9f04", donated: 860, reputation: 860, streamers: 3, last: "34 min ago" },
-  { addr: "0x9c02…4a7e", donated: 610, reputation: 610, streamers: 4, last: "1 hour ago" },
-  { addr: "0x3b88…d5c1", donated: 505, reputation: 505, streamers: 2, last: "3 hours ago" },
-  { addr: "0xf27a…8b90", donated: 430, reputation: 430, streamers: 6, last: "today" },
-  { addr: "0x62c4…1e3d", donated: 355, reputation: 355, streamers: 2, last: "yesterday" },
-  { addr: "0x08a1…7cf2", donated: 290, reputation: 290, streamers: 3, last: "yesterday" },
-  { addr: "0xd4e9…2b60", donated: 210, reputation: 210, streamers: 1, last: "2 days ago" },
+  { addr: "7aF3sE…qKy3", donated: 1240, reputation: 1240, streamers: 5, last: "2 min ago" },
+  { addr: "Bx4dE…9fQ4", donated: 860, reputation: 860, streamers: 3, last: "34 min ago" },
+  { addr: "9c2Wq…4a7E", donated: 610, reputation: 610, streamers: 4, last: "1 hour ago" },
+  { addr: "3b8Kp…d5C1", donated: 505, reputation: 505, streamers: 2, last: "3 hours ago" },
+  { addr: "F27aV…8b9Q", donated: 430, reputation: 430, streamers: 6, last: "today" },
+  { addr: "6JcQ4…1e3D", donated: 355, reputation: 355, streamers: 2, last: "yesterday" },
+  { addr: "8VaZ1…7cF2", donated: 290, reputation: 290, streamers: 3, last: "yesterday" },
+  { addr: "D4eW9…2b6Q", donated: 210, reputation: 210, streamers: 1, last: "2 days ago" },
 ];
 
 export const PENALTY_LADDER = [
   { n: 1, label: "Hide / remove message", severe: false },
-  { n: 2, label: "Block the streamer's page", severe: false },
+  { n: 2, label: "Block the content maker's page", severe: false },
   { n: 3, label: "Temporarily suspend the page", severe: false },
-  { n: 4, label: "Revoke streamer role", severe: true },
+  { n: 4, label: "Revoke content maker role", severe: true },
   { n: 5, label: "Full wallet block", severe: true },
   { n: 6, label: "Refer to law enforcement", severe: true },
 ];
@@ -184,6 +184,6 @@ export const APPLY_ACTIONS = [
   "Hide message",
   "Block page",
   "Suspend page",
-  "Revoke streamer role",
+  "Revoke content maker role",
   "Block wallet",
 ];

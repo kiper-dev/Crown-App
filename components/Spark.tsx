@@ -2,8 +2,9 @@
 
 import { useId } from "react";
 
-// Mini chart of receipts over time. Fill is the purple accent (design charter),
-// no gold. Stretches to the parent's width (preserveAspectRatio="none").
+// Mini chart of receipts over time. Neutral by design — the accent is rationed site-wide
+// ("редко, но метко"), and a wall of purple sparklines was spending it on decoration.
+// Stretches to the parent's width (preserveAspectRatio="none").
 export function Spark({ data, className }: { data: number[]; className?: string }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const w = 100;
@@ -30,12 +31,12 @@ export function Spark({ data, className }: { data: number[]; className?: string 
     <svg className={className} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden>
       <defs>
         <linearGradient id={`sg-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.28" />
+          <stop offset="0%" stopColor="#F1EFF7" stopOpacity="0.14" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={area} fill={`url(#sg-${id})`} />
-      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d={line} fill="none" stroke="rgba(241, 239, 247, 0.55)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }

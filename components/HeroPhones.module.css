@@ -7,44 +7,89 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: 430px;
-  margin-top: 48px;
+  height: 526px; /* ~498 visible + 28 headroom (padding-top) so a lifted phone isn't cut at the top */
+  padding-top: 28px;
+  margin-top: 24px;
+  /* overflow:hidden still clips the BOTTOM so phones bleed off the section edge — that was fine.
+     The padding-top just moves the clip's top edge up, giving a scaled-up phone room to grow
+     upward instead of being cut. */
   overflow: hidden;
-  pointer-events: none;
 }
 
 .phone {
   position: relative;
   flex: none;
-  width: 256px;
-  height: 540px;
-  border-radius: 44px;
-  padding: 10px;
+  width: 300px;
+  height: 632px;
+  border-radius: 50px;
+  padding: 12px;
   background: #0c0b10;
   border: 1px solid var(--line-strong);
   box-shadow: var(--shadow-float);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  /* hover lift: a small scale-up on top of each phone's resting transform (set per-position below) */
+  transition: transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
+}
+.phone:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring-accent), var(--shadow-float);
 }
 .center {
   z-index: 2;
+  transform: translateY(0) scale(1);
+}
+/* Scale only — no translateY. A hover that also SHIFTS the phone slides it out from under the
+   cursor mid-gesture: at the lower edge the pointer ends up outside the moved element and the
+   click misses the link entirely (that's the "clicks are buggy" report). Scaling grows the phone
+   around its own centre, so wherever you started hovering stays under the cursor. */
+.center:hover {
+  transform: scale(1.05);
+  border-color: var(--accent);
 }
 .side {
   z-index: 1;
-  transform: translateY(58px) scale(0.95);
+  transform: translateY(66px) scale(0.95);
+}
+/* Same rule as the center: keep the resting translateY EXACTLY as-is and only grow the scale, so
+   the phone never travels out from under the pointer mid-hover. Coming forward (z-index) is what
+   makes a side phone fully clickable despite the overlap. */
+.side:hover {
+  transform: translateY(66px) scale(1);
+  z-index: 3; /* a hovered side phone comes forward, over the center one */
+  border-color: var(--accent);
 }
 .left {
-  margin-right: -52px;
+  margin-right: -60px;
 }
 .right {
-  margin-left: -52px;
+  margin-left: -60px;
+}
+
+/* The phones overlap (negative margins) and the center sits on top, so its RECTANGULAR link box
+   reached past its rounded shell and covered the inner edge of each side phone — a click there
+   landed on Roulette instead of the phone under the cursor. Clipping each link to its own rounded
+   shell fixes both that and the dead rounded corners: a phone now only catches clicks where it is
+   actually drawn. The center keeps its full shape (it IS on top there); the sides are clipped to
+   their shell too, so the strip under the center simply belongs to the center. */
+.phone {
+  clip-path: inset(0 round 50px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .phone { transition: border-color var(--dur-2) var(--ease); }
+  .center:hover, .side:hover { transform: none; }
+  .side { transform: translateY(66px) scale(0.95); }
 }
 
 .notch {
   position: absolute;
-  top: 20px;
+  top: 22px;
   left: 50%;
   transform: translateX(-50%);
-  width: 92px;
-  height: 26px;
+  width: 108px;
+  height: 30px;
   border-radius: var(--r-pill);
   background: #0c0b10;
   z-index: 3;
@@ -52,7 +97,7 @@
 
 .screen {
   height: 100%;
-  border-radius: 35px;
+  border-radius: 40px;
   background: var(--bg-1);
   overflow: hidden;
   display: flex;
@@ -105,198 +150,201 @@
   background: var(--text-2);
 }
 
-/* ---- LEFT: donate page ---- */
-.donateScreen {
+/* ---- shared game-screen shell (one mini-game per phone) ---- */
+.game {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 22px 22px 0;
-  gap: 6px;
+  padding: 22px 24px 0;
+  gap: 14px;
 }
-.donateScreen :global(.mono) {
-  margin-bottom: 4px;
+/* Side phones are tucked ~52px behind the center one, so their inner edge is covered.
+   Push each side phone's content toward its VISIBLE outer edge so nothing important lands
+   under the overlap and gets clipped. Left phone's inner edge is the right; right phone's is the left. */
+.gameLeft {
+  padding-right: 72px;
 }
-.donName {
-  font-size: 20px;
+.gameRight {
+  padding-left: 72px;
+  padding-right: 18px;
+}
+.eyebrow {
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
-.donHandle {
-  font-size: 13px;
-  color: var(--text-3);
-  margin-bottom: 16px;
+.headline {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
 }
-.chips {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.chip {
-  height: 36px;
-  padding: 0 16px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: var(--r-pill);
-  border: 1px solid var(--line-strong);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-2);
-}
-.chipActive {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #0f0e14;
-}
-.donateBtn {
+.cta {
   width: 100%;
-  height: 50px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--r-2);
   background: var(--accent);
   color: #0f0e14;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-}
-.donNote {
-  font-size: 12px;
-  color: var(--text-3);
-  margin-top: 12px;
-}
-
-/* ---- CENTER: earnings ---- */
-.earnScreen {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 18px 22px 0;
-}
-.earnTop {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.earnLabel {
-  font-size: 13px;
-  color: var(--text-2);
-}
-.bigNum {
-  font-size: 38px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-.cents {
-  font-size: 22px;
-  color: var(--text-2);
-}
-.delta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: #6bd39a;
   margin-top: 4px;
 }
-.deltaDot {
+.note {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* ---- LEFT: Task for donation ---- */
+.taskCard {
+  background: var(--bg-0);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.taskQuote {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-1);
+}
+.taskMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.taskAmt {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.escrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+.escrowDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #6bd39a;
-}
-.tags {
-  display: flex;
-  gap: 8px;
-  margin: 16px 0;
-}
-.tag {
-  padding: 6px 12px;
-  border-radius: var(--r-pill);
-  background: var(--bg-2);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-2);
-}
-.chart {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 10px;
-  height: 120px;
-  width: 100%;
-  margin-top: 4px;
-}
-.bar {
-  width: 20px;
-  border-radius: 6px 6px 4px 4px;
-  background: var(--bg-3);
-}
-.barHot {
   background: var(--accent);
 }
-.tabs {
-  display: flex;
-  gap: 6px;
-  margin-top: 18px;
-}
-.tab {
-  padding: 6px 14px;
-  border-radius: var(--r-pill);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-3);
-}
-.tabActive {
-  background: var(--bg-2);
-  color: var(--text-1);
-}
 
-/* ---- RIGHT: growth, dark ---- */
-.growthScreen {
-  flex: 1;
+/* ---- CENTER: Roulette wheel (the real RouletteWheel SVG, rendered small) ---- */
+.wheelWrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+}
+.open {
+  color: var(--accent);
+  font-style: normal;
+}
+.roundCard {
+  background: var(--bg-0);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: 11px 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 22px 22px 0;
+  gap: 9px;
 }
-.growthLabel {
-  font-size: 13px;
-  color: var(--text-2);
-  margin-bottom: 6px;
+.roundHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-3);
+  white-space: nowrap;
 }
-.growthNum {
-  font-size: 40px;
+.pot {
   font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--accent);
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.rouRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.rouName {
+  color: var(--text-2);
+  width: 66px;
+  flex: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rouBar {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.rouBar > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+.rouPct {
+  width: 32px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--text-1);
   font-variant-numeric: tabular-nums;
 }
-.growthSub {
-  font-size: 12.5px;
-  color: #6bd39a;
-  margin-top: 4px;
+
+/* ---- RIGHT: Fundraiser, dark (crown fills bottom-up, like the real page) ---- */
+.frGame {
+  align-items: center;
+  text-align: center;
 }
-.growthChart {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 150px;
-  width: 100%;
-  margin-top: 24px;
+.frPledge {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
 }
-.gbar {
-  flex: 1;
-  border-radius: 2px 2px 0 0;
-  background: linear-gradient(to top, var(--accent-down), var(--accent));
-  opacity: 0.9;
+.frGame svg {
+  margin: 4px 0 2px;
+  /* a soft accent pool under the crown so it reads as a lit trophy, not a flat grey shape */
+  filter: drop-shadow(0 0 22px rgba(139, 124, 246, 0.28)) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4));
 }
-.growthFoot {
-  font-size: 12px;
+.frPct {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.frSums {
+  font-size: 13px;
   color: var(--text-3);
-  margin-top: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.frSums b {
+  color: var(--text-1);
+  font-weight: 700;
 }
 
 @media (max-width: 720px) {
@@ -304,7 +352,7 @@
     display: none;
   }
   .phones {
-    height: 400px;
-    margin-top: 32px;
+    height: 424px; /* 400 visible + 24 headroom */
+    margin-top: 8px;
   }
 }

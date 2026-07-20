@@ -1,67 +1,58 @@
 import Link from "next/link";
-import { CrownMark } from "./icons";
 import styles from "./SiteFooter.module.css";
 
-// The five letters of the wordmark, each wearing its own little crown — "название crown
-// из маленьких короночек". Data-driven so the crown hats line up over the exact letters.
-const WORD = ["C", "R", "O", "W", "N"];
+// Every repo linked here was checked to actually exist (200) under the org — the "open & honest"
+// column is only honest if the links resolve. Crown-Contracts / Crown-Programs are 404, so absent.
+const ORG = "https://github.com/69walterwhite420-star";
+const REPOS = [
+  { href: `${ORG}/Crown-Core`, label: "Core contract" }, // splitter + canister
+  { href: `${ORG}/Crown-Factory`, label: "Escrow factory" }, // the games' escrow
+  { href: ORG, label: "All on GitHub" },
+];
 
-const CORE_REPO = "https://github.com/69walterwhite420-star/Crown-Core";
-
-// The big page footer. Every link points somewhere real (post-front.md: no links to pages that
-// don't exist) — internal routes that ship today, plus the open-source contract. The brand
-// lockup is the one purple spot; the little crowns and letters stay neutral.
+// The big page footer: links that point somewhere real (post-front.md: no links to pages that
+// don't exist), and nothing else. The brand is said exactly ONCE, by the giant watermark at the
+// bottom — the badge, the spelled-out wordmark, the tagline and the copyright line all used to
+// repeat it up here, which is four ways of saying "Crown" to someone already on the site.
 export function SiteFooter() {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div className={styles.top}>
-          <div className={styles.brand}>
-            <CrownMark className={styles.glyph} aria-hidden />
-            <div className={styles.wordmark} role="img" aria-label="Crown">
-              {WORD.map((ch, i) => (
-                <span key={i} className={styles.letter} aria-hidden>
-                  <CrownMark className={styles.mini} />
-                  <span className={styles.char}>{ch}</span>
-                </span>
-              ))}
-            </div>
-            <p className={styles.tagline}>Donations straight to your wallet. The money never touches us.</p>
-          </div>
-
           <nav className={styles.cols} aria-label="Footer">
             <div className={styles.col}>
               <div className={styles.colHead}>Explore</div>
-              <Link href="/discover">Find a streamer</Link>
+              <Link href="/discover">Find a content maker</Link>
               <Link href="/games">Mini-games</Link>
-              <Link href="/@kira">Example page</Link>
             </div>
             <div className={styles.col}>
-              <div className={styles.colHead}>For streamers</div>
+              <div className={styles.colHead}>For content makers</div>
               <Link href="/create">Create your page</Link>
-              <Link href="/space">Dashboard</Link>
+              <Link href="/space">Personal space</Link>
             </div>
             <div className={styles.col}>
               <div className={styles.colHead}>Open &amp; honest</div>
-              <a href={CORE_REPO} target="_blank" rel="noreferrer">
-                Core contract
-              </a>
-              <span className={styles.fact}>Non-custodial</span>
-              <span className={styles.fact}>3% flat, hardcoded</span>
+              {REPOS.map((r) => (
+                <a key={r.href} href={r.href} target="_blank" rel="noreferrer">
+                  {r.label}
+                </a>
+              ))}
+            </div>
+            <div className={styles.col}>
+              <div className={styles.colHead}>Legal</div>
+              <Link href="/terms">Terms</Link>
+              <Link href="/privacy">Privacy</Link>
             </div>
           </nav>
         </div>
+      </div>
 
-        <div className={styles.bar}>
-          <span className={styles.copy}>© Crown — a wallet is all you need.</span>
-          <div className={styles.barLinks}>
-            <a href={CORE_REPO} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            <Link href="/">Terms</Link>
-            <Link href="/">Privacy</Link>
-          </div>
-        </div>
+      {/* The wordmark as a watermark: oversized, barely-there, and cropped by the page edge — it
+          signs the page off without being another thing to read. Not aria-hidden: with the badge,
+          wordmark and copyright line all gone, this is the only place the footer names Crown, so
+          hiding it would leave a screen reader with an unnamed page. */}
+      <div className={styles.watermark}>
+        Crown
       </div>
     </footer>
   );

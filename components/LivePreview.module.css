@@ -1,5 +1,7 @@
-/* Device frames for the live iframe preview. Mirrors PagePreview's chrome (phone with a notch,
-   desktop with a browser bar) but the body is a scaled iframe of the real page, not a mock. */
+/* Device frames for the live iframe preview: the body is a scaled iframe of the REAL page.
+   The phone's notch is a real bezel row (.bezel), NOT an overlay on the screen: as a flex child it
+   takes its own space and pushes the page down, so it looks like a phone without ever covering the
+   first ~25px of real content (the avatar row) the way an absolutely-positioned notch did. */
 .frame {
   position: relative;
   display: flex;
@@ -18,17 +20,23 @@
   border-radius: 34px;
   box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-float);
 }
-.phone::before {
-  content: "";
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
+/* The phone's top bezel: a real flex row, so the notch hanging from it costs layout space
+   instead of sitting on top of the page. It carries the SCREEN's background, not the frame's —
+   any other color turns the row itself into a visible black band across the phone, and the notch
+   should be the only thing you see up here. */
+.bezel {
+  flex: none;
+  height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--bg-0);
+}
+.notch {
   width: 78px;
-  height: 18px;
-  border-radius: 0 0 12px 12px;
+  height: 15px;
+  border-radius: 0 0 11px 11px;
   background: #050507;
-  z-index: 2;
 }
 
 .desktop {
@@ -63,14 +71,25 @@
   white-space: nowrap;
 }
 
-/* The scaled iframe fills this box exactly (see LivePreview.tsx: iframe logical size ×
-   scale = box size), so we clip to it and anchor the transform at the top-left. */
+/* The scaled iframe is rendered at the page's full height inside .scaler; .screen is the
+   scroll container, so hovering the preview and spinning the mouse wheel pages through the
+   whole page. The scrollbar is hidden — it's a device frame, not a document. */
 .screen {
   flex: 1;
   min-height: 0;
   position: relative;
-  overflow: hidden;
+  overflow: auto; /* both axes: at the minimum scale a desktop page is wider than the frame */
+  overscroll-behavior: contain; /* wheeling the preview doesn't also scroll the builder behind it */
   background: var(--bg-0);
+  scrollbar-width: none; /* Firefox */
+}
+.screen::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+/* Reserves the scaled page's real box so the scroll container has something to travel through —
+   width included, since at the minimum scale the page is wider than the frame. */
+.scaler {
+  position: relative;
 }
 .iframe {
   position: absolute;

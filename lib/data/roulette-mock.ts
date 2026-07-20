@@ -41,12 +41,15 @@ export const MOCK_ROULETTE_HISTORY: RouletteRound[] = [
 // later; kept pure (rand passed in) so the Overview tab can demo it client-side with no backend.
 export function pickWeighted(rows: RouletteSuggestion[], rand: number): RouletteSuggestion | null {
   const total = rows.reduce((sum, r) => sum + r.pool, 0);
-  if (!total) return null;
+  // Rank mode can spin a wheel nobody has backed yet — no money means equal slices, not no spin.
+  if (!total) return rows.length ? rows[Math.min(rows.length - 1, Math.floor(rand * rows.length))] : null;
   let acc = 0;
   const target = rand * total;
   for (const r of rows) {
     acc += r.pool;
-    if (target <= acc) return r;
+    // strict "<" so a slice's upper boundary belongs to the next slice, and a zero-pool
+    // suggestion (acc unchanged) can never be the one that first exceeds the target
+    if (target < acc) return r;
   }
   return rows[rows.length - 1];
 }

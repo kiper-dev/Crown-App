@@ -1,0 +1,53 @@
+/* Shared pill toggle for public game pages (Task / Roulette / Auction). Lifted from the auction
+   page so all three stay identical. */
+.tabs {
+  display: inline-flex;
+  align-self: center;
+  gap: 4px;
+  margin: 18px auto 4px;
+  padding: 4px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.tab:hover {
+  color: var(--text-1);
+}
+.tabOn {
+  background: var(--accent-grad, var(--accent));
+  color: var(--accent-grad-ink, #0f0e14);
+}
+/* the count pill on a tab — flips to a readable tint when its tab is active */
+.count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tabOn .count {
+  background: rgba(15, 14, 20, 0.18);
+  color: var(--accent-grad-ink, #0f0e14);
+}

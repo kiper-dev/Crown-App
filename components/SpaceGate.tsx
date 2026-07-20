@@ -1,0 +1,89 @@
+"use client";
+
+import { Logo } from "@/components/Logo";
+import { WalletButton } from "@/components/WalletButton";
+import { CrownBadge } from "@/components/CrownBadge";
+import { isDemoAddress } from "@/lib/data/session";
+import styles from "./SpaceGate.module.css";
+
+const short = (a: string) => (a.length > 14 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a);
+
+/**
+ * The sign-in wall for the personal space. The wallet is the login: you get in if you hold the
+ * wallet the page's payouts go to.
+ *
+ * The demo way in exists because it has to: a page created in demo mode is paid out to a
+ * placeholder address nobody holds the key to, so requiring a matching wallet would lock its
+ * owner out forever. It's spelled out rather than hidden — this build has no accounts.
+ */
+export function SpaceGate({
+  pageAddress,
+  connectedAddress,
+  allowDemo,
+  onDemoEnter,
+}: {
+  pageAddress: string;
+  connectedAddress?: string;
+  allowDemo: boolean;
+  onDemoEnter: () => void;
+}) {
+  // A wallet is connected, but it isn't the one this page pays out to.
+  const wrongWallet = Boolean(connectedAddress);
+  const demoPage = isDemoAddress(pageAddress);
+
+  return (
+    <main className="page">
+      <header className="appbar">
+        <Logo />
+      </header>
+
+      <div className={styles.wrap}>
+        <div className={styles.card}>
+          <CrownBadge className={styles.mark} />
+
+          {wrongWallet ? (
+            <>
+              <h1 className={styles.title}>That&apos;s not this page&apos;s wallet</h1>
+              <p className={styles.lead}>
+                You&apos;re connected as <span className={`${styles.addr} num`}>{short(connectedAddress!)}</span>, but this
+                page pays out to <span className={`${styles.addr} num`}>{short(pageAddress)}</span>. Switch to that wallet
+                to get in.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className={styles.title}>Connect your wallet</h1>
+              <p className={styles.lead}>
+                Your wallet is your login — Crown has no passwords. You&apos;re the owner of this page if you hold the
+                wallet it pays out to
+                {!demoPage && (
+                  <>
+                    : <span className={`${styles.addr} num`}>{short(pageAddress)}</span>
+                  </>
+                )}
+                .
+              </p>
+            </>
+          )}
+
+          <div className={styles.action}>
+            <WalletButton />
+          </div>
+
+          {allowDemo && (
+            <div className={styles.demo}>
+              <span className={styles.demoNote}>
+                {demoPage
+                  ? "This page was created in demo mode — its payout address is a placeholder, so no wallet can own it yet."
+                  : "The app is running on mock data — nothing here is real money yet."}
+              </span>
+              <button type="button" className={styles.demoBtn} onClick={onDemoEnter}>
+                Continue in demo mode
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}

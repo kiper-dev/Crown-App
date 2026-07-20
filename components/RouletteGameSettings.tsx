@@ -53,7 +53,7 @@ export function RouletteGameSettings({ profile, onSave }: { profile: Profile; on
           Exclude my top tier
         </label>
         <div className="footnote">
-          For streamers whose biggest supporters already get asked directly — keeps the wheel for everyone else.
+          For content makers whose biggest supporters already get asked directly — keeps the wheel for everyone else.
         </div>
 
         <div className="field">

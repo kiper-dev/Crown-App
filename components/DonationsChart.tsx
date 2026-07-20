@@ -11,6 +11,7 @@ const SOURCE_LABEL: Record<DonationSource, string> = {
   task: "Task",
   roulette: "Roulette",
   fundraiser: "Fundraiser",
+  auction: "Auction",
 };
 
 // "Donations by day", filterable by source right on the chart (like the admin panel's growth

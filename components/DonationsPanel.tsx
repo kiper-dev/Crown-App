@@ -7,7 +7,7 @@ import type { GameId } from "@/lib/data/games";
 import { Feed } from "./Feed";
 
 type GameFilter = "all" | GameId | "direct";
-const GAME_OPTIONS: (GameId | "direct")[] = ["direct", "task", "roulette", "fundraiser"];
+const GAME_OPTIONS: (GameId | "direct")[] = ["direct", "task", "roulette", "fundraiser", "auction"];
 
 // The cabinet's "Donations" tab: the full feed with a name search, a mini-game filter and a
 // date filter. Filtering is plain client-side over the mock feed — the same list the rest of

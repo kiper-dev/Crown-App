@@ -49,7 +49,7 @@ export function TaskGameSettings({ profile, onSave }: { profile: Profile; onSave
         </div>
 
         <div className="field">
-          <label htmlFor="task-deadline">Time to complete</label>
+          <label htmlFor="task-deadline">Longest deadline a viewer may pick</label>
           <select id="task-deadline" value={cfg.deadlineHours} onChange={(e) => patch({ deadlineHours: +e.target.value })}>
             {DEADLINE_OPTIONS.map((o) => (
               <option key={o.hours} value={o.hours}>

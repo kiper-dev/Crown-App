@@ -5,11 +5,12 @@ import { CrownMark } from "./icons";
 import styles from "./MoneyFlow.module.css";
 
 const AMOUNTS = [5, 25, 100];
-const FEE = 0.03;
 
 // Count a number toward `target` with an ease-out, so the figures visibly settle when the
 // viewer picks a new amount — the same "live value" feel as a pro DeFi flow, but explaining
-// the one thing that matters here: a donation minus a flat 3% lands in the streamer's wallet.
+// the one thing that matters here: a direct donation lands in the streamer's wallet WHOLE.
+// The splitter takes nothing (Crown-Core: "Комиссии нет"); the flat 3% exists only inside
+// mini-game escrows and only on a successful payout — refunds are free.
 function useCountUp(target: number, duration = 480) {
   const [val, setVal] = useState(target);
   const from = useRef(target);
@@ -67,8 +68,7 @@ function Connector() {
 export function MoneyFlow() {
   const [amount, setAmount] = useState(25);
   const gross = useCountUp(amount);
-  const fee = useCountUp(amount * FEE);
-  const net = useCountUp(amount * (1 - FEE));
+  const net = useCountUp(amount);
   const rep = Math.round(useCountUp(amount));
 
   return (
@@ -105,10 +105,10 @@ export function MoneyFlow() {
             <span className={styles.badge}>
               <CrownMark />
             </span>
-            Crown keeps 3%
+            Smart contract
           </div>
-          <div className={styles.value}>−{money(fee)}</div>
-          <div className={styles.nodeSub}>the entire fee — no more</div>
+          <div className={styles.value}>−{money(0)}</div>
+          <div className={styles.nodeSub}>0% on direct donations — mini-games carry a flat 3% at payout</div>
         </div>
 
         <Connector />

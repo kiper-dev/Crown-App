@@ -15,8 +15,10 @@ function short(addr?: string) {
 function friendlyError(e: unknown): { text: string; soft: boolean } {
   if (e instanceof NotConfiguredError) return { text: e.message, soft: false };
   const msg = e instanceof Error ? e.message : String(e);
-  if (/rejected|denied|4001|cancel/i.test(msg)) return { text: "", soft: true }; // cancel — not an error
-  if (/insufficient/i.test(msg)) return { text: "Not enough USDC in the wallet.", soft: false };
+  if (/rejected|denied|declined|cancel/i.test(msg)) return { text: "", soft: true }; // user closed the wallet — not an error
+  // Solana wallets phrase an empty USDC account several ways; SOL covers tx fees.
+  if (/insufficient|custom program error: 0x1\b|InsufficientFunds/i.test(msg)) return { text: "Not enough USDC in the wallet.", soft: false };
+  if (/could not find account|AccountNotFound/i.test(msg)) return { text: "No devnet USDC in this wallet yet.", soft: false };
   if (/connect.*wallet/i.test(msg)) return { text: "Connect your wallet first.", soft: false };
   return { text: "Something went wrong. Try again.", soft: false };
 }
@@ -24,7 +26,7 @@ function friendlyError(e: unknown): { text: string; soft: boolean } {
 export function DonateForm({
   handle,
   defaultAmount = 5,
-  streamerName = "the streamer's wallet",
+  streamerName = "the content maker's wallet",
   presets = DEFAULT_PRESETS,
   slug,
 }: {
@@ -85,7 +87,7 @@ export function DonateForm({
 
     if (chainNeedsConnect) {
       if (!wallet.hasWallet) {
-        setError("No wallet found in the browser. Install MetaMask or Rabby.");
+        setError("No Solana wallet found in the browser. Install Phantom or Solflare.");
         return;
       }
       wallet.connect();

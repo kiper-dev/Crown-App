@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CrownMark, SocialIcon, GameIcon, NavIcon, SearchIcon } from "@/components/icons";
+import { SocialIcon, GameIcon, NavIcon, SearchIcon } from "@/components/icons";
+import { CrownBadge } from "@/components/CrownBadge";
 import { BarsIcon, LineIcon } from "@/components/Chart";
 import { StatTile, BarList, GrowthChart, StatusPill, SortHeader, money, shortMoney, axisTicks } from "@/components/ops";
 import { useCrown } from "@/lib/data/DataProvider";
@@ -29,7 +30,7 @@ function PeopleIcon() {
 type Section = "overview" | "streamers" | "donators" | "tasks" | "moderation" | "settings";
 const NAV: { key: Section; label: string; icon: () => React.JSX.Element }[] = [
   { key: "overview", label: "Overview", icon: () => <NavIcon name="home" /> },
-  { key: "streamers", label: "Streamers", icon: PeopleIcon },
+  { key: "streamers", label: "Content makers", icon: PeopleIcon },
   { key: "donators", label: "Donators", icon: PeopleIcon },
   { key: "tasks", label: "Tasks", icon: () => <NavIcon name="games" /> },
 ];
@@ -48,7 +49,7 @@ export default function OpsPage() {
       <nav className="admin-nav" aria-label="Admin panel sections">
         <div className="brand">
           <Link className="logo" href="/" aria-label="Go to homepage">
-            <CrownMark />
+            <CrownBadge size={26} />
             Crown
           </Link>
         </div>
@@ -73,7 +74,9 @@ export default function OpsPage() {
         </button>
       </nav>
 
-      <div className="admin-main">
+      {/* key on the section: React remounts the column when you switch, so the entrance
+          cascade (globals.css .admin-main > *) replays for the newly shown content */}
+      <div className="admin-main" key={section}>
         {section === "overview" && <Overview />}
         {section === "streamers" && <Streamers />}
         {section === "donators" && <Donators />}
@@ -114,16 +117,16 @@ function Overview() {
       <div className="admin-head">
         <div>
           <h1>Overview</h1>
-          <div className="sub">The whole platform, across all streamers.</div>
+          <div className="sub">The whole platform, across all content makers.</div>
         </div>
       </div>
 
       <div className="stat-grid">
-        <StatTile k="Streamers" v={String(s.streamers)} s={`${s.streamersActive} active · ${s.streamersLive} live`} />
+        <StatTile k="Content makers" v={String(s.streamers)} s={`${s.streamersActive} active · ${s.streamersLive} live`} />
         <StatTile k="Total received" v={money(s.received)} />
         <StatTile k="Last 7 days" v={money(s.last7d)} />
         <StatTile k="Fee" v={money(s.fee)} s="3% of volume" />
-        <StatTile k="Average per streamer" v={money(s.avgPerStreamer)} />
+        <StatTile k="Average per content maker" v={money(s.avgPerStreamer)} />
         <StatTile k="Largest" v={money(s.largest)} />
       </div>
 
@@ -227,7 +230,7 @@ function Overview() {
         <div className="panel">
           <div className="panel-head">
             <div>
-              <h2>Streamers by volume</h2>
+              <h2>Content makers by volume</h2>
               <div className="ph-sub">Distribution by donation amount</div>
             </div>
           </div>
@@ -249,7 +252,7 @@ function Overview() {
           <div className="panel-head">
             <div>
               <h2>Tasks by status</h2>
-              <div className="ph-sub">1 paid out to streamer · 1 refunded to donator</div>
+              <div className="ph-sub">1 paid out to content maker · 1 refunded to donator</div>
             </div>
           </div>
           <div className="barlist">
@@ -307,13 +310,13 @@ function Streamers() {
     <>
       <div className="admin-head">
         <div>
-          <h1>Streamers</h1>
+          <h1>Content makers</h1>
           <div className="sub">{rows.length} of {OPS_STATS.streamers}</div>
         </div>
         <div className="admin-controls">
           <div className="search-field">
             <SearchIcon width={16} height={16} />
-            <input type="text" placeholder="Find a streamer…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Find a streamer" />
+            <input type="text" placeholder="Find a content maker…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Find a content maker" />
           </div>
         </div>
       </div>
@@ -324,7 +327,7 @@ function Streamers() {
             <thead>
               <tr>
                 <th className="rank">#</th>
-                <SortHeader label="Streamer" active={sortKey === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
+                <SortHeader label="Content maker" active={sortKey === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
                 <SortHeader label="Socials" active={sortKey === "socials"} dir={sortDir} onClick={() => toggleSort("socials")} />
                 <SortHeader label="Received" align="r" active={sortKey === "received"} dir={sortDir} onClick={() => toggleSort("received")} />
                 <SortHeader label="7 days" align="r" active={sortKey === "d7"} dir={sortDir} onClick={() => toggleSort("d7")} />
@@ -356,7 +359,7 @@ function Streamers() {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={6} style={{ textAlign: "center", padding: "40px 16px", color: "var(--text-3)" }}>
-                    No streamer matches "{q}".
+                    No content maker matches "{q}".
                   </td>
                 </tr>
               )}
@@ -432,7 +435,7 @@ function Donators() {
                 <SortHeader label="Wallet" active={sortKey === "wallet"} dir={sortDir} onClick={() => toggleSort("wallet")} />
                 <SortHeader label="Donated" align="r" active={sortKey === "donated"} dir={sortDir} onClick={() => toggleSort("donated")} />
                 <SortHeader label="Reputation" align="r" active={sortKey === "reputation"} dir={sortDir} onClick={() => toggleSort("reputation")} />
-                <SortHeader label="Streamers" align="r" active={sortKey === "streamers"} dir={sortDir} onClick={() => toggleSort("streamers")} />
+                <SortHeader label="Content makers" align="r" active={sortKey === "streamers"} dir={sortDir} onClick={() => toggleSort("streamers")} />
                 <SortHeader label="Activity" align="r" active={sortKey === "activity"} dir={sortDir} onClick={() => toggleSort("activity")} />
               </tr>
             </thead>
@@ -473,7 +476,7 @@ function Tasks() {
       <div className="admin-head">
         <div>
           <h1>Tasks</h1>
-          <div className="sub">All escrow tasks across streamers — {OPS_TASKS.length} worth {money(total)} in play.</div>
+          <div className="sub">All escrow tasks across content makers — {OPS_TASKS.length} worth {money(total)} in play.</div>
         </div>
         <div className="admin-controls">
           <div className="seg">
@@ -492,7 +495,7 @@ function Tasks() {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Streamer</th>
+                <th>Content maker</th>
                 <th>Task</th>
                 <th>Donator</th>
                 <th className="r">Amount</th>
@@ -527,7 +530,7 @@ function Tasks() {
 function classify(text: string): { tone: "ok" | "attn" | "bad"; verdict: string; note: string } {
   const t = text.toLowerCase();
   if (/(child.*porn|csam|drugs|terroris)/.test(t)) return { tone: "bad", verdict: "Escalate", note: "Critical: preserve and hand off to law enforcement." };
-  if (/(kill|threat|violence|porn|scam)/.test(t)) return { tone: "attn", verdict: "Hide", note: "Rule violation: the message is hidden, the streamer gets a flag." };
+  if (/(kill|threat|violence|porn|scam)/.test(t)) return { tone: "attn", verdict: "Hide", note: "Rule violation: the message is hidden, the content maker gets a flag." };
   if (!text.trim()) return { tone: "ok", verdict: "—", note: "Enter text to check." };
   return { tone: "ok", verdict: "Passed", note: "No violations found." };
 }
@@ -553,7 +556,7 @@ function Moderation() {
       <div className="admin-head">
         <div>
           <h1>Moderation</h1>
-          <div className="sub">Platform level: what a streamer can't do.</div>
+          <div className="sub">Platform level: what a content maker can't do.</div>
         </div>
       </div>
 
@@ -600,9 +603,9 @@ function Moderation() {
                 <input type="text" placeholder="CSAM / flooding / sanctions" value={reason} onChange={(e) => setReason(e.target.value)} />
               </div>
               <div className="field">
-                <label>Streamer</label>
+                <label>Content maker</label>
                 <select value={target} onChange={(e) => setTarget(e.target.value)}>
-                  <option value="">— choose a streamer —</option>
+                  <option value="">— choose a content maker —</option>
                   {OPS_STREAMERS.map((r) => <option key={r.handle} value={r.handle}>@{r.handle}</option>)}
                 </select>
               </div>
@@ -613,7 +616,7 @@ function Moderation() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 20 }}>
               <button className="btn-danger" type="button" disabled={!target} onClick={apply}>Apply measure</button>
-              {!target ? <span className="footnote">Specify a target: streamer</span> : null}
+              {!target ? <span className="footnote">Specify a target: content maker</span> : null}
             </div>
           </div>
         </div>
@@ -626,7 +629,7 @@ function Moderation() {
             <div className="panel" style={{ padding: 0 }}>
               <div className="otable-wrap">
                 <table className="otable">
-                  <thead><tr><th>When</th><th>Action</th><th>Streamer</th><th>Reason</th></tr></thead>
+                  <thead><tr><th>When</th><th>Action</th><th>Content maker</th><th>Reason</th></tr></thead>
                   <tbody>
                     {log.map((l, i) => (
                       <tr key={i}>
@@ -679,7 +682,7 @@ function Settings() {
       </div>
 
       <div className="panel placeholder" style={{ maxWidth: 640 }}>
-        <h2>Coming soon</h2>
+        <h2>Not wired up yet</h2>
         Operator roles, access, and thresholds are on the plan. The panel runs on demo data: real data will come from crown-app/api and the reputation ledger.
         <div style={{ marginTop: 16 }}>
           <Link className="btn-outline" href="/">To the site</Link>

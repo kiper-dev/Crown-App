@@ -1,0 +1,46 @@
+/* Legal pages (Terms, Privacy): one narrow, readable prose column between the shared nav and footer. */
+.wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.article {
+  flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 56px 24px 88px;
+}
+.title {
+  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.updated {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.article :global(h2) {
+  margin-top: 36px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.article :global(p) {
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.article :global(a) {
+  color: var(--accent);
+}
+.note {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 14px !important;
+  color: var(--text-3) !important;
+}

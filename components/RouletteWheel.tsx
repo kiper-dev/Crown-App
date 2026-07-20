@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import type { RouletteSuggestion } from "@/lib/data/roulette-mock";
 import styles from "./RouletteWheel.module.css";
 
-// On-charter wheel palette: neighbouring dark neutrals, no rainbow — the slice SIZE carries
-// the information (share of pot = odds), color only separates neighbours. Labels stay white.
-const FILLS = ["#26242F", "#2E2C3A", "#1D1C24", "#353244", "#232230"];
+// On-charter wheel palette: neighbouring dark neutrals stepped far enough apart to read as
+// separate slices, no rainbow — the slice SIZE carries the information (share of pot = odds).
+// The LEADING slice alone rides the accent gradient, exactly like the catalog poster and the
+// primary buttons: one purple splash, everything else calm.
+const FILLS = ["#322F40", "#1E1D26", "#3A3550", "#262430", "#2D2B3A"];
 
 interface Slice {
   s: RouletteSuggestion;
@@ -69,6 +71,8 @@ export function RouletteWheel({
   onSliceClick?: (s: RouletteSuggestion) => void;
 }) {
   const { slices, total } = computeSlices(round);
+  // The accent belongs to the verdict once there is one, and to the biggest pool until then.
+  const leadId = winnerId ?? (round.length ? [...round].sort((a, b) => b.pool - a.pool)[0].id : null);
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const handled = useRef(0);
@@ -110,8 +114,16 @@ export function RouletteWheel({
   }, [winnerId]);
 
   return (
-    <div className={styles.wrap} style={{ width: size, height: size }}>
+    <div className={styles.wrap} style={{ width: size }}>
       <svg viewBox="0 0 200 200" className={styles.svg} aria-hidden>
+        <defs>
+          {/* userSpaceOnUse + центр в оси вращения — градиент не «плывёт» при спине */}
+          <radialGradient id="wheel-lead" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="94">
+            <stop offset="0%" stopColor="#7A6BE4" />
+            <stop offset="55%" stopColor="#8B7CF6" />
+            <stop offset="100%" stopColor="#D9D2FC" />
+          </radialGradient>
+        </defs>
         <g
           className={styles.wheel}
           style={{
@@ -126,9 +138,9 @@ export function RouletteWheel({
               cx="100"
               cy="100"
               r="94"
-              fill={FILLS[0]}
+              fill="url(#wheel-lead)"
               stroke="#0F0E14"
-              strokeWidth="1"
+              strokeWidth="2"
               className={onSliceClick ? styles.clickable : styles.slice}
               onClick={onSliceClick ? () => onSliceClick(slices[0].s) : undefined}
             />
@@ -137,9 +149,9 @@ export function RouletteWheel({
               <path
                 key={sl.s.id}
                 d={slicePath(sl.start, sl.angle)}
-                fill={FILLS[i % FILLS.length]}
+                fill={sl.s.id === leadId ? "url(#wheel-lead)" : FILLS[i % FILLS.length]}
                 stroke="#0F0E14"
-                strokeWidth="1"
+                strokeWidth="2"
                 className={`${onSliceClick ? styles.clickable : styles.slice}${winnerId && winnerId !== sl.s.id ? ` ${styles.dimmed}` : ""}`}
                 onClick={onSliceClick ? () => onSliceClick(sl.s) : undefined}
               >
@@ -163,7 +175,7 @@ export function RouletteWheel({
                     key={`t-${sl.s.id}`}
                     x={lx}
                     y={ly}
-                    className={styles.label}
+                    className={`${styles.label}${sl.s.id === leadId ? ` ${styles.labelLead}` : ""}`}
                     transform={`rotate(${rot.toFixed(2)}, ${lx.toFixed(2)}, ${ly.toFixed(2)})`}
                   >
                     {trunc(sl.s.title)}
@@ -172,9 +184,16 @@ export function RouletteWheel({
               })}
         </g>
 
-        <circle cx="100" cy="100" r="97" className={styles.rim} />
-        <circle cx="100" cy="100" r="8" className={styles.hub} />
-        <path d="M100 17 L94 3 L106 3 Z" className={styles.pointer} />
+        {/* the rim: a hairline + a soft accent halo just outside it */}
+        <circle cx="100" cy="100" r="96.5" className={styles.rim} />
+        <circle cx="100" cy="100" r="99" className={styles.rimGlow} />
+        {/* the axle: layered hub so the wheel has a physical center */}
+        <circle cx="100" cy="100" r="13" className={styles.hubOuter} />
+        <circle cx="100" cy="100" r="9" className={styles.hub} />
+        <circle cx="100" cy="100" r="3" className={styles.hubDot} />
+        {/* the needle: white, with a dark seam so it survives landing on the light slice */}
+        <path d="M100 22 L93 2 Q100 -2 107 2 Z" className={styles.pointerSeam} />
+        <path d="M100 19 L94.5 3 Q100 0 105.5 3 Z" className={styles.pointer} />
       </svg>
     </div>
   );

@@ -19,10 +19,12 @@ export interface Streamer {
   handle: string; // without "@"
   name: string;
   bio: string;
-  address: `0x${string}`; // where donations arrive
+  address: string; // where donations arrive — a base58 Solana pubkey (validated at entry, lib/chain/config isValidAddress)
   socials: Social[];
   tiers: Tier[];
   donatePresets?: number[]; // custom amount chips from the page builder; DonateForm falls back to [1,5,10]
+  avatarUrl?: string; // uploaded avatar (data URL); when absent, surfaces fall back to the monogram
+  avatarEnabled?: boolean; // owner can hide the avatar entirely
 }
 
 export interface Donation {
@@ -53,6 +55,7 @@ export interface DonateInput {
   name?: string;
   message?: string;
   slug?: string; // set when donating on a campaign page — only that campaign's total is bumped
+  source?: GameId | "direct"; // which mini-game settled this money; defaults to a plain donation
 }
 
 // A block on the streamer's public page that can be toggled on/off and reordered.
@@ -104,6 +107,19 @@ export interface FundraiserDraft {
   presets: number[]; // chip-in amount chips, at least 1
   widgets: PageWidget[]; // chip-in form + socials — toggle/reorder, same shape as the main page
   design: PageDesign; // the fundraiser page's own backdrop
+  fillImage?: string; // data URL — the content maker's own photo for the fill-up figure; empty = Crown badge
+}
+
+// The Task page itself — what a viewer sees when they open the link to set a paid task.
+// Same builder shape as the Fundraiser and Roulette drafts; the queue of real tasks is live
+// data (lib/data/tasks.ts), not part of the draft.
+export interface TaskDraft {
+  headline: string; // the pitch — what you're taking tasks for
+  description: string; // longer text under it (what you'll do, what you won't)
+  descriptionEnabled: boolean;
+  presets: number[]; // task amount chips, at least 1
+  widgets: PageWidget[]; // task form + socials — toggle/reorder, same shape as the main page
+  design: PageDesign; // the task page's own backdrop
 }
 
 // The Roulette page itself — what viewers see when they open the round: the streamer's own
@@ -130,13 +146,33 @@ export interface FundraiserConfig {
   minAcceptPct: number; // % of the goal required to accept when allowBelowGoal is on
 }
 
+// The Auction page itself — what viewers see when they open the bidding: the streamer's pitch
+// plus the page furniture (same builder pattern as the other game pages). Lots and bids are live
+// data (lib/data/auction.ts), not part of the draft.
+export interface AuctionDraft {
+  headline: string; // the pitch — what you're auctioning your time for
+  description: string; // longer text under it (what you will/won't do)
+  descriptionEnabled: boolean;
+  presets: number[]; // bid amount chips, at least 1
+  widgets: PageWidget[]; // bid form + socials — toggle/reorder, same shape as the main page
+  design: PageDesign; // the auction page's own backdrop
+}
+
+// Rules for the Auction game — the streamer's knobs from the spec (duration, perform window,
+// min bid). Not on-chain in mock mode; on chain they are fixed per auction at creation.
+export interface AuctionConfig {
+  minBid: number; // $ — a single bid below this doesn't register
+  biddingHours: number; // how long the bidding stays open
+  performHours: number; // window to deliver the winning condition after the final
+}
+
 // Streamer profile (localStorage — the "mock backend"). widgets/design/avatar* are optional so
 // profiles saved before the page builder shipped still load — see lib/data/pagebuilder.ts defaults.
 export interface Profile {
   handle: string;
   name: string;
   bio: string;
-  address: `0x${string}` | "";
+  address: string; // base58 Solana pubkey, or "" until the wallet step sets one
   socials: Social[];
   tiers: Tier[];
   avatarEnabled?: boolean;
@@ -144,11 +180,14 @@ export interface Profile {
   bioEnabled?: boolean;
   widgets?: PageWidget[];
   design?: PageDesign;
-  task?: string; // what the viewer is paying for (Task for donation builder)
+  task?: string; // legacy: the old author-page builder's task line — TaskDraft.headline supersedes it
+  taskPage?: TaskDraft; // the Task game's own public page — see TaskDraft
   donatePresets?: number[]; // the donate widget's amount chips — streamer can add/remove, at least 1
   taskConfig?: TaskGameConfig; // rules for the Task for donation game — see TaskGameConfig
   rouletteConfig?: RouletteConfig; // rules for the Roulette game — see RouletteConfig
   roulette?: RouletteDraft; // the Roulette page — see RouletteDraft
   fundraiser?: FundraiserDraft; // the active Fundraiser page — see FundraiserDraft
   fundraiserConfig?: FundraiserConfig; // rules for the Fundraiser game — see FundraiserConfig
+  auction?: AuctionDraft; // the Auction page — see AuctionDraft
+  auctionConfig?: AuctionConfig; // rules for the Auction game — see AuctionConfig
 }

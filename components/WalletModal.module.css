@@ -1,0 +1,199 @@
+/* Connect-wallet modal — centred dialog over a dimmed, blurred backdrop. Portalled to <body>. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 7, 11, 0.66);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: wmFade 0.16s var(--ease) both;
+}
+@keyframes wmFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.card {
+  width: 100%;
+  max-width: 384px;
+  padding: 16px;
+  background: var(--bg-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-3);
+  box-shadow: var(--shadow-float);
+  animation: wmPop 0.2s var(--ease) both;
+}
+@keyframes wmPop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  color: var(--text-3);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.help:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  justify-self: end;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.close:hover {
+  background: var(--bg-2);
+  color: var(--text-1);
+}
+
+/* featured primary — the accent-gradient CTA */
+.featured {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 54px;
+  border: none;
+  border-radius: var(--r-2);
+  background: var(--accent-grad);
+  color: var(--accent-grad-ink);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 22px -10px rgba(139, 124, 246, 0.8);
+  transition: background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+.featured:hover {
+  background: var(--accent-grad-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px -10px rgba(139, 124, 246, 0.9);
+}
+.featured:active {
+  transform: translateY(0) scale(0.99);
+  background: var(--accent-grad-down);
+}
+.featured:disabled {
+  cursor: default;
+  opacity: 0.85;
+  transform: none;
+}
+
+.divider {
+  margin: 14px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 62px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--bg-0);
+  color: var(--text-1);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease), background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease);
+}
+.row:hover {
+  border-color: var(--line-strong);
+  background: var(--bg-2);
+  transform: translateY(-1px);
+}
+.row:active {
+  transform: translateY(0);
+}
+.row:disabled {
+  cursor: default;
+  opacity: 0.7;
+  transform: none;
+}
+.rowName {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.soon {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-2);
+  background: var(--accent-soft);
+  color: var(--text-2);
+  font-size: 13px;
+  text-align: center;
+}
+
+.foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.foot a {
+  color: var(--text-2);
+  text-decoration: none;
+  font-weight: 600;
+}
+.foot a:hover {
+  color: var(--accent);
+}

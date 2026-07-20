@@ -41,16 +41,6 @@
   letter-spacing: 0.14em;
   white-space: nowrap;
 }
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  clip-path: polygon(50% 2%, 95% 26%, 95% 74%, 50% 98%, 5% 74%, 5% 26%);
-}
 .nav {
   display: flex;
   align-items: center;

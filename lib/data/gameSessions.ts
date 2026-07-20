@@ -1,0 +1,160 @@
+// Game sessions — the layer that lets one streamer run several instances of the same mini-game
+// at once (two auctions in parallel, a fresh roulette round while yesterday's is settling, …).
+// Data + store, no React, localStorage like the rest of the mock backend.
+//
+// The trick: every per-game store already keys its localStorage by an opaque string ("handle").
+// A session simply owns a SCOPE — the string the stores are keyed by. The first session ever
+// adopts the legacy scope (the bare handle), so data from before sessions existed stays visible;
+// every later session gets a namespaced scope and starts EMPTY (see the fresh markers below).
+//
+// A session's live/finished state is COMPUTED from the game's own state, not stored — so it can
+// never drift: an auction that reached its verdict IS a finished session, no syncing required.
+
+import type { GameId } from "./games";
+import { markFresh } from "./freshScope";
+import { readAuctionMeta } from "./auction";
+import { readRoundMeta } from "./roulette";
+import { readStatus } from "./fundraiser";
+
+export interface GameSession {
+  id: string;
+  gameId: GameId;
+  name: string; // the streamer's label — "Friday auction", defaults to "Auction #2"
+  scope: string; // the storage key the game's stores are keyed by
+  createdAt: number;
+  endedAt?: number; // manual "End session" — terminal game states finish a session on their own
+}
+
+export type SessionState = "live" | "finished";
+
+const KEY = "crown-game-sessions";
+const CURRENT_KEY = "crown-current-session";
+
+// ---- the registry ----
+
+function key(handle: string, gameId: GameId) {
+  return `${KEY}:${handle}:${gameId}`;
+}
+
+export function readSessions(handle: string, gameId: GameId): GameSession[] {
+  try {
+    const raw = localStorage.getItem(key(handle, gameId));
+    const list = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(list)) return list;
+  } catch {}
+  return [];
+}
+
+function writeSessions(handle: string, gameId: GameId, list: GameSession[]) {
+  try {
+    localStorage.setItem(key(handle, gameId), JSON.stringify(list));
+  } catch {}
+}
+
+const GAME_NOUN: Record<GameId, string> = { task: "Tasks", roulette: "Round", fundraiser: "Fundraiser", auction: "Auction" };
+
+// Create a session. The first one ever adopts the legacy scope (bare handle) so pre-session data
+// and the demo seeds keep showing; every later one is namespaced and starts empty.
+export function createSession(handle: string, gameId: GameId, name?: string): GameSession {
+  const list = readSessions(handle, gameId);
+  const id = `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const legacyTaken = list.some((s) => s.scope === handle);
+  const scope = legacyTaken ? `${handle}::${id}` : handle;
+  const session: GameSession = {
+    id,
+    gameId,
+    name: name?.trim() || `${GAME_NOUN[gameId]} #${list.length + 1}`,
+    scope,
+    createdAt: Date.now(),
+  };
+  if (legacyTaken) markFresh(scope);
+  writeSessions(handle, gameId, [session, ...list]);
+  setCurrentSession(handle, gameId, id);
+  return session;
+}
+
+// Manual end — for games with no natural finale (tasks) and for killing a stuck one.
+// The game state itself is left untouched: a finished session is an archive, not a deletion.
+export function endSession(handle: string, gameId: GameId, id: string): GameSession[] {
+  const next = readSessions(handle, gameId).map((s) => (s.id === id ? { ...s, endedAt: Date.now() } : s));
+  writeSessions(handle, gameId, next);
+  return next;
+}
+
+// ---- computed state ----
+
+// A session is finished when the streamer ended it, or the game under it reached a terminal
+// state on its own — the "auction over → session off" rule, for free, with no sync to forget.
+export function sessionState(s: GameSession): SessionState {
+  if (s.endedAt) return "finished";
+  switch (s.gameId) {
+    case "auction": {
+      const m = readAuctionMeta(s.scope);
+      return m && (m.state === "settled" || m.state === "refunded" || m.state === "cancelled") ? "finished" : "live";
+    }
+    case "roulette": {
+      // a spun wheel ends the session; "New round" inside the same session clears the winner
+      // and brings it back live — the state is derived, so it just follows
+      return readRoundMeta(s.scope)?.winner ? "finished" : "live";
+    }
+    case "fundraiser": {
+      const st = readStatus(s.scope).state;
+      return st === "delivered" || st === "refunded" ? "finished" : "live";
+    }
+    case "task":
+      return "live"; // a task queue has no finale — ended by hand
+  }
+}
+
+export function activeSessions(handle: string, gameId: GameId): GameSession[] {
+  return readSessions(handle, gameId).filter((s) => sessionState(s) === "live");
+}
+
+// ---- the current selection (which session the cabinet tabs are looking at) ----
+
+export function getCurrentSession(handle: string, gameId: GameId): GameSession | null {
+  let id: string | null = null;
+  try {
+    id = localStorage.getItem(`${CURRENT_KEY}:${handle}:${gameId}`);
+  } catch {}
+  const list = readSessions(handle, gameId);
+  const current = id ? list.find((s) => s.id === id) : undefined;
+  // fall back to the first live session, then to nothing
+  return current ?? activeSessions(handle, gameId)[0] ?? null;
+}
+
+export function setCurrentSession(handle: string, gameId: GameId, id: string) {
+  try {
+    localStorage.setItem(`${CURRENT_KEY}:${handle}:${gameId}`, id);
+  } catch {}
+}
+
+// ---- resolution for the public pages ----
+
+// Which session should a viewer see? ?s=<id> wins; otherwise the only live one; otherwise the
+// caller gets the list and shows a picker (several live) or a "nothing running" note (none).
+// A streamer who never touched sessions gets a legacy passthrough on the bare handle, so every
+// pre-session page keeps working exactly as before.
+export function resolvePublicSession(
+  handle: string,
+  gameId: GameId,
+  sParam: string | null
+): { scope: string | null; sessionId: string | null; choices: GameSession[] } {
+  const all = readSessions(handle, gameId);
+  if (all.length === 0) return { scope: handle, sessionId: null, choices: [] };
+  const live = activeSessions(handle, gameId);
+  if (sParam) {
+    const hit = all.find((s) => s.id === sParam);
+    if (hit) return { scope: hit.scope, sessionId: hit.id, choices: live };
+  }
+  if (live.length === 1) return { scope: live[0].scope, sessionId: live[0].id, choices: live };
+  return { scope: null, sessionId: null, choices: live };
+}
+
+// The scope surfaces like HomeLive/ViewerLive/overlays should read from: the first live session,
+// or the legacy bare handle when sessions were never used (keeps every old surface working).
+export function firstActiveScope(handle: string, gameId: GameId): string {
+  const sessions = readSessions(handle, gameId);
+  if (sessions.length === 0) return handle;
+  return activeSessions(handle, gameId)[0]?.scope ?? handle;
+}

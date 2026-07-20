@@ -18,10 +18,12 @@
   --text-1: #F1EFF7;
   --text-2: #A6A2B4;
   --text-3: #8B8798;
-  --accent: #8B7CF6;
-  --accent-hover: #9C8FF8;
-  --accent-down: #7A6BE4;
-  --accent-soft: rgba(139, 124, 246, .14);
+  /* Color 2 — the flat accent: the exact MIDPOINT of the button gradient (#8B7CF6 → #F4F2FE).
+     Every non-gradient accent (chips, dots, borders, active states, links) uses this. */
+  --accent: #C0B7FA;
+  --accent-hover: #CFC7FC;
+  --accent-down: #B0A5F9;
+  --accent-soft: rgba(192, 183, 250, .16);
   --error: #E5726B;
   --error-soft: rgba(229, 114, 107, .12);
   --ring-neutral: 0 0 0 3px rgba(241, 239, 247, .12);
@@ -36,9 +38,20 @@
   --dur-2: 200ms;
   --dur-3: 600ms;
   --font: 'InterVar', system-ui, -apple-system, 'Segoe UI', Roboto, 'Ubuntu', 'Cantarell', 'Helvetica Neue', Arial, sans-serif;
-  /* Vertical accent→white gradient used across charts/bars and active tabs (top purple, bottom white). */
-  --chart-grad: linear-gradient(180deg, var(--accent) 0%, #ffffff 100%);
-  --chart-grad-ink: #0F0E14; /* readable text on the gradient (dark, works on both purple and white) */
+  /* Color 1 — the accent GRADIENT (the button look): a fixed purple→light ramp. Its top stops are
+     pinned here, independent of the flat --accent above, so the gradient stays constant while the
+     flat accent sits at its midpoint. THE way filled accent surfaces are painted (primary buttons,
+     chart bars); flat tints use --accent so a page never turns into a gradient soup. */
+  --grad-top: #8B7CF6;
+  --grad-top-hover: #9C8FF8;
+  --grad-top-down: #7A6BE4;
+  --accent-grad: linear-gradient(180deg, var(--grad-top) 0%, #F4F2FE 100%);
+  --accent-grad-hover: linear-gradient(180deg, var(--grad-top-hover) 0%, #FFFFFF 100%);
+  --accent-grad-down: linear-gradient(180deg, var(--grad-top-down) 0%, #EBE7FB 100%);
+  --accent-grad-ink: #0F0E14; /* readable text on the gradient (dark — works on both purple and near-white) */
+  /* Charts keep the same gradient, but run to pure white for the tall-bar look the design started from. */
+  --chart-grad: linear-gradient(180deg, var(--grad-top) 0%, #ffffff 100%);
+  --chart-grad-ink: #0F0E14;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,12 +81,12 @@ button { font-family: inherit; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   height: 56px; padding: 0 28px; border: none; border-radius: var(--r-2);
-  background: var(--accent); color: #0F0E14;
+  background: var(--accent-grad); color: var(--accent-grad-ink);
   font-size: 17px; font-weight: 600; cursor: pointer; text-decoration: none;
-  transition: background var(--dur-1) var(--ease), transform var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
+  transition: filter var(--dur-1) var(--ease), transform var(--dur-1) var(--ease), opacity var(--dur-1) var(--ease);
 }
-.btn:hover { background: var(--accent-hover); }
-.btn:active { background: var(--accent-down); transform: scale(.98); }
+.btn:hover { background: var(--accent-grad-hover); }
+.btn:active { background: var(--accent-grad-down); transform: scale(.98); }
 .btn:disabled { cursor: default; opacity: .75; }
 .btn:focus-visible { outline: none; box-shadow: var(--ring-accent); }
 .btn-outline {
@@ -99,6 +112,12 @@ button { font-family: inherit; }
 
 /* A number field with a unit glued inside it — a leading $ or a trailing min/% — so money and
    time inputs read as money and time, matching the $-prefixed amount chips in the page builder. */
+/* Number inputs never show spinner arrows — anywhere. Steppers are set by buttons and chips
+   in this UI; the browser's tiny arrows just add noise. */
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
 .affix { position: relative; display: flex; align-items: center; }
 .affix > input { width: 100%; }
 .affix > .affix-pre, .affix > .affix-suf {
@@ -132,7 +151,7 @@ button { font-family: inherit; }
 .chip:hover:not(:disabled) { background: var(--bg-2); }
 .chip:disabled { cursor: default; opacity: .55; }
 .chip:focus-visible { outline: none; box-shadow: var(--ring-neutral); }
-.chip.active { background: var(--accent); border-color: var(--accent); color: #0F0E14; }
+.chip.active { background: var(--text-1); border-color: var(--text-1); color: #0F0E14; }
 .chip input {
   width: 68px; background: transparent; border: none; color: inherit;
   font: inherit; text-align: center;
@@ -297,6 +316,26 @@ button { font-family: inherit; }
 .rep-gain { display: block; min-height: 25px; font-size: 16px; font-weight: 600; color: var(--text-1); opacity: 0; transition: opacity var(--dur-2) var(--ease); }
 .rep-gain.show { opacity: 1; animation: rise var(--dur-2) var(--ease); }
 
+/* ---- streamer page: two-column body (live games + donate | reputation + feed) ---- */
+.viewer-body {
+  max-width: 1040px; margin: 0 auto; padding: 8px 20px 48px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start;
+}
+.viewer-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.viewer-side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; }
+@media (max-width: 900px) {
+  .viewer-body { grid-template-columns: 1fr; max-width: 560px; padding-bottom: 32px; }
+  .viewer-side { position: static; }
+}
+/* reputation number + inline "+N just now" gain, and a progress bar to the next tier */
+.rep-card .rep-num { display: flex; align-items: baseline; gap: 10px; }
+.rep-card .rep-gain { display: inline; min-height: 0; font-size: 17px; color: var(--accent); }
+.rep-progress { margin-top: 12px; }
+.rep-track { height: 8px; border-radius: var(--r-pill); background: var(--bg-2); overflow: hidden; }
+.rep-fill { height: 100%; border-radius: var(--r-pill); background: var(--accent-grad, var(--accent)); transition: width var(--dur-2) var(--ease); }
+.rep-next { font-size: 14px; color: var(--text-2); margin-top: 8px; }
+.rep-next b { color: var(--text-1); }
+
 /* ---------- campaign ---------- */
 .wrap { max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; display: flex; flex-direction: column; gap: 24px; }
 .trust { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text-2); text-decoration: none; }
@@ -315,24 +354,7 @@ button { font-family: inherit; }
 .powered a:hover { color: var(--accent-hover); }
 
 /* ---------- signup wizard ---------- */
-.wizard { max-width: 620px; margin: 0 auto; padding: 40px 20px 80px; display: flex; flex-direction: column; gap: 28px; }
-.wizard .head h1 { font-size: 32px; font-weight: 700; letter-spacing: -.015em; }
-.wizard .head p { font-size: 16px; color: var(--text-2); margin-top: 4px; }
-.stepper { display: flex; align-items: center; gap: 8px; }
-.stepper .st { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--text-3); white-space: nowrap; }
-.stepper .st.active { color: var(--text-1); }
-.stepper .st.done { color: var(--text-2); }
-.stepper .dot {
-  width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line-strong);
-  display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;
-}
-.stepper .st.active .dot { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.stepper .st.done .dot { border-color: var(--line-strong); }
-.stepper .sep { flex: 1; height: 1px; background: var(--line); min-width: 12px; }
-.step-body { display: flex; flex-direction: column; gap: 18px; }
-.step-body .hint { font-size: 15px; color: var(--text-2); }
-.link-preview { font-size: 15px; color: var(--text-2); }
-.link-preview b { color: var(--text-1); }
+/* The create wizard's own layout lives in app/create/page.module.css (only that page used it). */
 .social-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; }
 .social-row .ic { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: var(--r-1); background: var(--bg-2); color: var(--text-2); }
 .social-row .rm { background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 20px; padding: 8px; }
@@ -358,27 +380,40 @@ button { font-family: inherit; }
 .tier-swatch::-moz-color-swatch { border: none; border-radius: 7px; }
 .tier-row .rm { background: transparent; border: none; color: var(--text-3); cursor: pointer; font-size: 20px; padding: 8px; }
 .tier-row .rm:hover { color: var(--text-1); }
-.wallet-choice { display: flex; flex-direction: column; gap: 12px; }
-.wallet-opt { border: 1px solid var(--line-strong); border-radius: var(--r-2); padding: 16px; cursor: pointer; background: transparent; text-align: left; color: var(--text-1); transition: border-color var(--dur-1) var(--ease); }
-.wallet-opt:hover { border-color: rgba(235, 233, 244, .32); }
-.wallet-opt .t { font-size: 16px; font-weight: 600; }
-.wallet-opt .s { font-size: 14px; color: var(--text-2); margin-top: 2px; }
-.wizard-nav { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 20px; }
-.wizard-nav .back { background: transparent; border: none; color: var(--text-2); font-size: 16px; font-weight: 600; cursor: pointer; }
-.wizard-nav .back:hover { color: var(--text-1); }
-.wizard-nav .skip { font-size: 15px; color: var(--text-3); background: transparent; border: none; cursor: pointer; margin-right: 16px; }
-.wizard-nav .skip:hover { color: var(--text-2); }
 
 /* ---------- cabinet ---------- */
+/* Entrance: the cabinet settles in when you land on it — the bar, then the sidebar, then the
+   content. Same move as /games and /discover. It plays on mount, so arriving from the create
+   wizard's "Done" shows the space assembling itself; switching sections inside doesn't replay it
+   (the shell never remounts). */
+@keyframes spaceIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
 .space { min-height: 100vh; display: grid; grid-template-rows: 64px 1fr; grid-template-columns: 240px 1fr; }
+/* The cabinet shell stays put: only the content column scrolls. The topbar pins first so the
+   sidebar below it never has a gap of bare background above it. */
 .topbar {
   grid-column: 1 / 3; display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 20; background: var(--bg-0);
+  animation: spaceIn .5s var(--ease) both;
 }
+.topbar .brand { display: flex; align-items: center; gap: 14px; }
 .topbar .me { display: flex; align-items: center; gap: 16px; }
 .topbar .who { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; }
 .topbar .who .mono { width: 28px; height: 28px; font-size: 14px; }
-.sidenav { border-right: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+/* Sticky, not stretched: a grid item defaults to align-self:stretch, which fills the row and
+   leaves sticky nothing to travel through. Pinned under the 64px topbar, it owns the viewport's
+   full height and scrolls on its own if the nav ever outgrows the screen. */
+.sidenav {
+  border-right: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: 64px; align-self: start; height: calc(100vh - 64px); overflow-y: auto;
+  animation: spaceIn .5s var(--ease) .06s both;
+}
+/* Settings sits at the very bottom of the panel, away from the sections above it —
+   with a little floor under it so it isn't jammed against the screen edge. */
+.side-bottom { margin-top: auto; padding-top: 12px; padding-bottom: 8px; }
 .nav-item {
   position: relative; display: flex; align-items: center; gap: 12px;
   height: 44px; padding: 0 12px; border-radius: var(--r-1);
@@ -390,20 +425,21 @@ button { font-family: inherit; }
 .nav-item:focus-visible { outline: none; box-shadow: var(--ring-neutral); }
 .nav-item.active { color: var(--accent); background: var(--accent-soft); }
 .nav-item.active::before { content: ''; position: absolute; left: -12px; top: 10px; bottom: 10px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
-.main { width: 100%; max-width: 1040px; margin: 0 auto; padding: 32px 32px 64px; display: flex; flex-direction: column; gap: 24px; }
-/* The page builder's desktop preview needs real width — the standard 1040px cap would just
-   steal it back from the editor column instead of using the room already free to the right. */
+.main { width: 100%; max-width: 1040px; margin: 0 auto; padding: 32px 32px 64px; display: flex; flex-direction: column; gap: 24px; animation: spaceIn .5s var(--ease) .12s both; }
+/* Screens that genuinely need the room already free to the right, rather than letting the standard
+   1040px cap steal it back: the page builder (its desktop preview needs real width) and the Widgets
+   grid (which fits a third card per row here instead of shrinking the cards to squeeze one in). */
 .main-wide { max-width: 1360px; }
 .main-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .main-head h1 { font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
 .seg { display: flex; background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--r-pill); padding: 3px; }
 .seg button { height: 34px; padding: 0 16px; border: none; border-radius: var(--r-pill); background: transparent; color: var(--text-2); font-size: 14px; font-weight: 600; cursor: pointer; transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease); }
-.seg button.active { background: var(--chart-grad); color: var(--chart-grad-ink); }
+.seg button.active { background: var(--text-1); color: #0F0E14; }
 .seg button:focus-visible { outline: none; box-shadow: var(--ring-neutral); }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .tile .v { font-size: 40px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; }
 .tile .k { font-size: 15px; color: var(--text-2); margin-top: 4px; }
-.chart-card h2, .recent-card h2 { font-size: 19px; font-weight: 600; margin-bottom: 16px; }
+.chart-card h2 { font-size: 19px; font-weight: 600; margin-bottom: 16px; }
 .chart { display: flex; align-items: flex-end; gap: 4px; height: 192px; padding-top: 32px; }
 .chart .col { flex: 1; height: 100%; position: relative; display: flex; align-items: flex-end; min-width: 0; }
 .chart .b { width: 100%; background: var(--chart-grad); border-radius: 4px 4px 0 0; transition: filter var(--dur-1) var(--ease); }
@@ -412,8 +448,9 @@ button { font-family: inherit; }
 .chart .col.peak:hover .b { filter: saturate(1.15) brightness(1.08); }
 .peak-tag { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--text-2); white-space: nowrap; }
 .axis { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-3); margin-top: 10px; }
-.recent-card .more { font-size: 15px; color: var(--text-2); text-decoration: none; background: none; border: none; padding: 0; font-family: inherit; cursor: pointer; }
-.recent-card .more:hover { color: var(--text-1); }
+/* Dots on the line chart's peak / latest / hovered point. Overlaid (not in-SVG) so they stay round. */
+.chart-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-hover); transform: translate(-50%, -50%); box-shadow: 0 0 0 3px var(--bg-1), 0 0 8px var(--accent-soft); pointer-events: none; }
+.chart-dot.hot { width: 9px; height: 9px; background: var(--accent-hover); }
 .placeholder { color: var(--text-2); font-size: 16px; }
 .placeholder h2 { font-size: 19px; font-weight: 600; color: var(--text-1); margin-bottom: 8px; }
 
@@ -432,6 +469,24 @@ button { font-family: inherit; }
   .hero h1 { font-size: 32px; }
 }
 
+/* Phone: compact the shared public-page shells (streamer page + campaign) so the whole
+   thing fits on a narrow screen — and inside the builder's phone preview — without a long scroll. */
+@media (max-width: 460px) {
+  .hero { padding: 28px 16px 24px; gap: 8px; }
+  .hero .mono { width: 72px; height: 72px; font-size: 28px; }
+  .hero h1 { font-size: 26px; }
+  .bio { font-size: 14px; }
+  .cols { padding: 0 16px 40px; }
+  .stack { gap: 14px; }
+  .card { padding: 18px; }
+  .rep-num { font-size: 32px; }
+  .page-footer { padding: 18px 16px 40px; }
+  .wrap { padding: 28px 16px 40px; gap: 18px; }
+  .wrap h1 { font-size: 26px; }
+  .wrap .lead { font-size: 16px; }
+  .goal-now { font-size: 36px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -439,10 +494,16 @@ button { font-family: inherit; }
 /* ============================================================
    Admin Panel /admin (strict register, information design)
    ============================================================ */
+/* Entrance: the sidebar slides in from the left, then the main column's blocks cascade up.
+   Strict register — the move is small and quick; this is a control room, not a showcase. */
+@keyframes adminInLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+@keyframes adminInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
 .admin-page { min-height: 100vh; display: grid; grid-template-columns: 208px 1fr; }
 .admin-nav {
   border-right: 1px solid var(--line); padding: 20px 12px; display: flex; flex-direction: column; gap: 2px;
   position: sticky; top: 0; height: 100vh; align-self: start;
+  animation: adminInLeft .42s var(--ease) both;
 }
 .admin-nav .brand { display: flex; align-items: center; gap: 9px; padding: 0 12px 8px; }
 .admin-nav .brand .tag { font-size: 14px; color: var(--text-3); }
@@ -459,23 +520,62 @@ button { font-family: inherit; }
 .admin-divider { height: 1px; background: var(--line); margin: 8px 12px; }
 
 .admin-main { padding: 32px 40px 80px; max-width: 1640px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+/* Each block of the main column enters a beat after the previous. Keyed off the section in
+   page.tsx, so switching sections replays the cascade for the newly shown content. */
+.admin-main > * { animation: adminInUp .42s var(--ease) both; }
+.admin-main > *:nth-child(1) { animation-delay: .06s; }
+.admin-main > *:nth-child(2) { animation-delay: .12s; }
+.admin-main > *:nth-child(3) { animation-delay: .18s; }
+.admin-main > *:nth-child(4) { animation-delay: .24s; }
+.admin-main > *:nth-child(5) { animation-delay: .30s; }
+.admin-main > *:nth-child(n + 6) { animation-delay: .36s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-nav, .admin-main > * { animation: none; }
+}
+
 .admin-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .admin-head h1 { font-size: 28px; font-weight: 700; letter-spacing: -.015em; }
 .admin-head .sub { font-size: 15px; color: var(--text-2); margin-top: 4px; }
 .admin-controls { display: flex; align-items: center; gap: 10px; }
+/* Click into it and the field answers: widens, lifts a touch, the icon lights up in the accent
+   and a soft ring blooms once. Collapses back on blur — same spring both ways. */
 .search-field {
   position: relative; display: flex; align-items: center;
   width: 240px;
+  transition: width .35s cubic-bezier(.22, 1.2, .36, 1), transform .35s cubic-bezier(.22, 1.2, .36, 1);
 }
-.search-field svg { position: absolute; left: 12px; color: var(--text-3); pointer-events: none; }
+.search-field:focus-within { width: 330px; transform: translateY(-1px) scale(1.02); }
+.search-field svg {
+  position: absolute; left: 12px; color: var(--text-3); pointer-events: none;
+  transition: color var(--dur-2) var(--ease), transform .35s cubic-bezier(.22, 1.2, .36, 1);
+}
+.search-field:focus-within svg { color: var(--accent); transform: scale(1.12); }
 .search-field input {
   width: 100%; height: 38px; padding: 0 12px 0 34px;
   background: var(--bg-1); border: 1px solid var(--line-strong); border-radius: var(--r-pill);
   color: var(--text-1); font-family: inherit; font-size: 14px;
-  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
 }
 .search-field input::placeholder { color: var(--text-3); }
-.search-field input:focus { outline: none; border-color: rgba(235, 233, 244, .32); box-shadow: var(--ring-neutral); }
+.search-field input:focus { outline: none; }
+/* all the focus styling rides :focus-within on the container — one selector, and the ring/border
+   still shows in contexts that pin the field's width (the Widgets sidebar rail) */
+.search-field:focus-within input {
+  border-color: var(--accent);
+  background: var(--bg-0);
+  animation: search-bloom .45s var(--ease);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+@keyframes search-bloom {
+  0% { box-shadow: 0 0 0 0 rgba(192, 183, 250, .5); }
+  100% { box-shadow: 0 0 0 3px var(--accent-soft); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-field, .search-field svg { transition: none; }
+  .search-field:focus-within { width: 330px; transform: none; }
+  .search-field:focus-within input { animation: none; }
+}
 
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .stat { background: var(--bg-1); border: 1px solid var(--line); border-radius: var(--r-2); padding: 18px 20px; }
@@ -522,7 +622,7 @@ button { font-family: inherit; }
 /* status pills: shape + minimal color */
 .pill { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 12px; border-radius: var(--r-pill); font-size: 14px; font-weight: 600; border: 1px solid var(--line-strong); color: var(--text-2); white-space: nowrap; }
 .pill.wait { background: var(--bg-2); border-color: transparent; color: var(--text-2); }
-.pill.attn { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.pill.attn { border-style: dashed; border-color: rgba(235, 233, 244, .38); color: var(--text-1); background: var(--bg-2); }
 .pill.ok { border-color: var(--line-strong); color: var(--text-1); }
 .pill.bad { border-color: rgba(229, 114, 107, .5); color: var(--error); background: var(--error-soft); }
 .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -571,7 +671,7 @@ button { font-family: inherit; }
 .toggle .track { width: 40px; height: 24px; border-radius: var(--r-pill); background: var(--bg-2); position: relative; transition: background var(--dur-1) var(--ease); flex: none; }
 .toggle .track .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-2); transition: transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease); }
 .toggle.on .track { background: var(--accent); }
-.toggle.on .track .knob { transform: translateX(16px); background: #0F0E14; }
+.toggle.on .track .knob { transform: translateX(16px); background: var(--accent-grad-ink); }
 .verdict { border: 1px dashed var(--line-strong); border-radius: var(--r-2); padding: 16px; font-size: 15px; color: var(--text-2); }
 .empty-log { border: 1px dashed var(--line-strong); border-radius: var(--r-2); padding: 40px; text-align: center; color: var(--text-2); }
 .btn-danger { background: transparent; border: 1px solid rgba(229, 114, 107, .5); color: var(--error); height: 48px; padding: 0 22px; border-radius: var(--r-2); font-size: 16px; font-weight: 600; cursor: pointer; }

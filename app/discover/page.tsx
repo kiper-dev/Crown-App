@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { TopNav } from "@/components/TopNav";
 import { Mono } from "@/components/Mono";
@@ -11,6 +11,9 @@ import type { Social } from "@/lib/data/types";
 import styles from "./page.module.css";
 
 type Sort = "all" | "7d";
+// How long the exit cascade needs to finish before we swap results and re-enter (must clear the
+// longest exit delay + its duration in page.module.css: ~0.34s delay + 0.34s = ~0.68s).
+const EXIT_MS = 700;
 
 function money(n: number) {
   return `${n.toLocaleString("en-US")} $`;
@@ -20,9 +23,31 @@ export default function DiscoverPage() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<Sort>("all");
   const [platforms, setPlatforms] = useState<Social["kind"][]>([]);
+  // "entering" (cascade in) / "exiting" (cascade out in reverse). A filter click plays "exiting",
+  // then — after the cascade — applies the change and flips back to "entering" so the new,
+  // re-sorted results animate in fresh.
+  const [anim, setAnim] = useState<"entering" | "exiting">("entering");
+  const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (exitTimer.current) clearTimeout(exitTimer.current);
+    },
+    []
+  );
+
+  // Run a discrete filter change through the exit → swap → enter sequence.
+  function queueChange(apply: () => void) {
+    if (exitTimer.current) clearTimeout(exitTimer.current);
+    setAnim("exiting");
+    exitTimer.current = setTimeout(() => {
+      apply();
+      setAnim("entering");
+    }, EXIT_MS);
+  }
 
   function togglePlatform(kind: Social["kind"]) {
-    setPlatforms((prev) => (prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind]));
+    queueChange(() => setPlatforms((prev) => (prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind])));
   }
 
   const rows = useMemo(() => {
@@ -54,7 +79,7 @@ export default function DiscoverPage() {
         <div className={styles.searchRow}>
           <div className="search">
             <SearchIcon width={22} height={22} />
-            <input type="text" placeholder="Search streamers…" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <input type="text" placeholder="Search content makers…" value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
         </div>
 
@@ -63,10 +88,10 @@ export default function DiscoverPage() {
             <div className={styles.filterGroup}>
               <div className={styles.filterLabel}>Sort</div>
               <div className="seg">
-                <button type="button" className={sort === "all" ? "active" : ""} onClick={() => setSort("all")}>
+                <button type="button" className={sort === "all" ? "active" : ""} onClick={() => sort !== "all" && queueChange(() => setSort("all"))}>
                   All-time
                 </button>
-                <button type="button" className={sort === "7d" ? "active" : ""} onClick={() => setSort("7d")}>
+                <button type="button" className={sort === "7d" ? "active" : ""} onClick={() => sort !== "7d" && queueChange(() => setSort("7d"))}>
                   7 days
                 </button>
               </div>
@@ -92,11 +117,11 @@ export default function DiscoverPage() {
             </div>
           </aside>
 
-          <div className={styles.grid}>
+          <div className={`${styles.grid} ${styles[anim]}`}>
             {rows.map((r) => (
               <Link key={r.handle} className={styles.card} href={`/@${r.handle}`}>
                 <div className={styles.cardHead}>
-                  <Mono name={r.streamer.name} size={40} />
+                  <Mono name={r.streamer.name} size={40} src={r.streamer.avatarUrl} />
                   <div className={styles.cardWho}>
                     <span className={styles.cardHandle}>@{r.handle}</span>
                     <span className={styles.cardName}>{r.streamer.name}</span>
@@ -119,7 +144,7 @@ export default function DiscoverPage() {
             ))}
 
             {!rows.length && (
-              <div className={styles.empty}>No streamers match your filters.</div>
+              <div className={styles.empty}>No content makers match your filters.</div>
             )}
           </div>
         </div>

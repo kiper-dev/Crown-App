@@ -1,38 +1,42 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useCrown } from "@/lib/data/DataProvider";
+import { useSolanaWallet, type WalletName } from "./wallet";
 
 // One wallet handle for both modes.
-// mock — "connected" without a real wallet; chain — a real injected wallet.
+// mock — "connected" without a real wallet; chain — a real Phantom/Solflare wallet.
 export function useWallet() {
   const { mode } = useCrown();
-  const { address, isConnected } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
-  const { disconnect } = useDisconnect();
+  const w = useSolanaWallet();
 
   if (mode === "mock") {
     return {
       mode,
       connected: true,
-      address: undefined as `0x${string}` | undefined,
-      connect: () => {},
+      address: undefined as string | undefined,
+      connect: (_name?: WalletName) => {},
       disconnect: () => {},
       connecting: false,
       hasWallet: true,
+      detected: [] as WalletName[],
+      sendTransaction: w.sendTransaction,
     };
   }
 
-  const injected = connectors[0];
   return {
     mode,
-    connected: isConnected,
-    address,
-    connect: () => {
-      if (injected) connect({ connector: injected });
+    connected: w.connected,
+    address: w.address ?? undefined,
+    // Default to Phantom, else whatever is installed — the picker in
+    // WalletButton passes an explicit name.
+    connect: (name?: WalletName) => {
+      const target = name ?? (w.detected.includes("phantom") ? "phantom" : w.detected[0]);
+      if (target) void w.connect(target).catch(() => {});
     },
-    disconnect,
-    connecting: isPending,
-    hasWallet: typeof window !== "undefined" && !!(window as { ethereum?: unknown }).ethereum,
+    disconnect: () => void w.disconnect(),
+    connecting: w.connecting,
+    hasWallet: w.detected.length > 0,
+    detected: w.detected,
+    sendTransaction: w.sendTransaction,
   };
 }

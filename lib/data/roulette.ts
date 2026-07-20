@@ -3,6 +3,7 @@
 // mock seed round, history) stay in lib/data/roulette-mock.ts.
 
 import type { PageWidget, Profile, RouletteDraft } from "./types";
+import { isFreshScope } from "./freshScope";
 import { DEFAULT_DESIGN } from "./pagebuilder";
 import { MOCK_ROUND, MOCK_ROULETTE_HISTORY, type GameGenre, type RouletteRound, type RouletteSuggestion } from "./roulette-mock";
 
@@ -63,7 +64,8 @@ function readLocal(handle: string): LocalSuggestion[] {
 }
 
 export function readRound(handle: string): RouletteSuggestion[] {
-  const merged: RouletteSuggestion[] = MOCK_ROUND.map((s) => ({ ...s }));
+  // A fresh session starts with an empty wheel — the seeded round belongs to the first scope only.
+  const merged: RouletteSuggestion[] = isFreshScope(handle) ? [] : MOCK_ROUND.map((s) => ({ ...s }));
   for (const l of readLocal(handle)) {
     const hit = merged.find((s) => s.title.toLowerCase() === l.title.toLowerCase());
     if (hit) {
@@ -99,6 +101,11 @@ export function addSuggestion(handle: string, title: string, genre: GameGenre, a
 export interface RoundMeta {
   startedAt: number; // epoch ms — the round clock's zero
   winner: { id: string; title: string } | null; // set once the wheel lands
+  // Who gets to PUT a game on the wheel — everyone-by-donating (classic), or free for viewers
+  // at minTier and above (the КМ picks the tier when the session is created). Backing an
+  // existing suggestion is a donation in both modes.
+  mode?: "donate" | "rank";
+  minTier?: string;
 }
 
 const META_KEY = "crown-roulette-meta";
@@ -108,7 +115,9 @@ export function readRoundMeta(handle: string): RoundMeta | null {
     const raw = localStorage.getItem(`${META_KEY}:${handle}`);
     if (!raw) return null;
     const meta = JSON.parse(raw);
-    return typeof meta?.startedAt === "number" ? { startedAt: meta.startedAt, winner: meta.winner ?? null } : null;
+    return typeof meta?.startedAt === "number"
+      ? { startedAt: meta.startedAt, winner: meta.winner ?? null, mode: meta.mode, minTier: meta.minTier }
+      : null;
   } catch {
     return null;
   }
@@ -118,6 +127,14 @@ function writeMeta(handle: string, meta: RoundMeta) {
   try {
     localStorage.setItem(`${META_KEY}:${handle}`, JSON.stringify(meta));
   } catch {}
+}
+
+// Open a round with its mode — called when the session is created. Classic sessions never call
+// this and fall through to ensureRound's default (donate).
+export function initRound(handle: string, opts: { mode: "donate" | "rank"; minTier?: string }): RoundMeta {
+  const fresh: RoundMeta = { startedAt: Date.now(), winner: null, mode: opts.mode, minTier: opts.minTier };
+  writeMeta(handle, fresh);
+  return fresh;
 }
 
 // Returns the current round, starting its clock on first sight.
@@ -141,7 +158,8 @@ export function newRound(handle: string): RoundMeta {
   try {
     localStorage.removeItem(`${ROUND_KEY}:${handle}`);
   } catch {}
-  const fresh: RoundMeta = { startedAt: Date.now(), winner: null };
+  const prev = readRoundMeta(handle);
+  const fresh: RoundMeta = { startedAt: Date.now(), winner: null, mode: prev?.mode, minTier: prev?.minTier };
   writeMeta(handle, fresh);
   return fresh;
 }

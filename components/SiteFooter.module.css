@@ -2,6 +2,24 @@
   width: 100%;
   background: var(--bg-1);
   border-top: 1px solid var(--line);
+  overflow: hidden; /* crops the watermark below at the page edge */
+}
+
+/* Giant wordmark signing off the page: sized to the viewport so it always overflows the sides
+   and gets cut, sitting just barely above the background. Clipped at the bottom too, so it
+   reads as the page running out rather than a word parked in a box. */
+.watermark {
+  font-size: 26vw;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.78;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  color: var(--text-1);
+  opacity: 0.04;
+  margin-bottom: -0.16em; /* let the letters' tails run off the bottom edge */
 }
 .inner {
   max-width: 1040px;
@@ -14,59 +32,6 @@
   justify-content: space-between;
   gap: 56px 40px;
   flex-wrap: wrap;
-}
-
-/* ---- brand lockup: big glyph + the CROWN wordmark wearing little crowns ---- */
-.brand {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  max-width: 380px;
-}
-
-.glyph {
-  display: block;
-  width: 56px;
-  height: 56px;
-  color: var(--accent); /* the footer's single purple spot */
-}
-
-.wordmark {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-}
-.letter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-/* the little crown sitting on top of each letter */
-.mini {
-  display: block;
-  width: 15px;
-  height: 15px;
-  color: var(--text-2);
-  transition: color var(--dur-2) var(--ease);
-}
-.char {
-  font-size: 40px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--text-1);
-}
-/* a small reward for looking closely: the crowns light up together on hover */
-.wordmark:hover .mini {
-  color: var(--accent);
-}
-
-.tagline {
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text-3);
-  max-width: 42ch;
 }
 
 /* ---- link columns ---- */
@@ -96,36 +61,6 @@
 }
 .col a:hover {
   color: var(--text-1);
-}
-.fact {
-  font-size: 15px;
-  color: var(--text-3);
-}
-
-/* ---- bottom bar ---- */
-.bar {
-  margin-top: 56px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px 24px;
-  flex-wrap: wrap;
-  font-size: 14px;
-  color: var(--text-3);
-}
-.barLinks {
-  display: flex;
-  gap: 22px;
-}
-.barLinks a {
-  color: var(--text-3);
-  text-decoration: none;
-  transition: color var(--dur-1) var(--ease);
-}
-.barLinks a:hover {
-  color: var(--text-2);
 }
 
 @media (max-width: 680px) {

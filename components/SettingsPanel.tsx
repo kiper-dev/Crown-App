@@ -1,16 +1,28 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { UploadIcon, SocialIcon, SOCIAL_LABEL, SOCIAL_KINDS, SOCIAL_BRAND } from "@/components/icons";
 import { SOCIAL_EXAMPLE, isSocialValid } from "@/lib/data/social-links";
 import { TierEditor } from "@/components/TierEditor";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import pageBuilderStyles from "@/components/PageBuilder.module.css";
 import type { Profile, Social } from "@/lib/data/types";
 
 // Profile identity: name, logo, socials, wallet, reputation tiers. Edits save live, the
 // same pattern as PageBuilder's patch() — no separate "Save" step, one less thing to forget.
-export function SettingsPanel({ profile, onSave, onDelete }: { profile: Profile; onSave: (p: Profile) => void; onDelete: () => void }) {
+export function SettingsPanel({
+  profile,
+  onSave,
+  onDelete,
+  onLogOut,
+}: {
+  profile: Profile;
+  onSave: (p: Profile) => void;
+  onDelete: () => void;
+  onLogOut: () => void;
+}) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [confirm, setConfirm] = useState<"logout" | "delete" | null>(null);
 
   function patch(next: Partial<Profile>) {
     onSave({ ...profile, ...next });
@@ -114,7 +126,7 @@ export function SettingsPanel({ profile, onSave, onDelete }: { profile: Profile;
         <p className="hint">Where donations arrive. Double-check it — donations can't be redirected after the fact.</p>
         <div className="field">
           <label htmlFor="set-wallet">Address</label>
-          <input id="set-wallet" type="text" placeholder="0x…" value={profile.address} onChange={(e) => patch({ address: e.target.value as `0x${string}` })} />
+          <input id="set-wallet" type="text" placeholder="Solana address, e.g. 7xKX…" value={profile.address} onChange={(e) => patch({ address: e.target.value })} />
         </div>
       </div>
 
@@ -127,11 +139,52 @@ export function SettingsPanel({ profile, onSave, onDelete }: { profile: Profile;
       </div>
 
       <div className="card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <h2 style={{ fontSize: 17, fontWeight: 600 }}>Session</h2>
+        <p className="hint">
+          Your wallet is your login. Signing out disconnects it — your page stays exactly as it is.
+        </p>
+        <button className="btn-outline" type="button" style={{ alignSelf: "flex-start" }} onClick={() => setConfirm("logout")}>
+          Log out
+        </button>
+      </div>
+
+      <div className="card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <h2 style={{ fontSize: 17, fontWeight: 600 }}>Danger zone</h2>
-        <button className="btn-outline" type="button" style={{ alignSelf: "flex-start" }} onClick={onDelete}>
+        <button className="btn-outline" type="button" style={{ alignSelf: "flex-start" }} onClick={() => setConfirm("delete")}>
           Delete page
         </button>
       </div>
+
+      {confirm === "logout" && (
+        <ConfirmDialog
+          title="Log out?"
+          confirmLabel="Log out"
+          onCancel={() => setConfirm(null)}
+          onConfirm={onLogOut}
+          body={
+            <>
+              You&apos;ll be signed out and your wallet disconnected. <b>Your page, tiers and game settings stay exactly
+              as they are</b> — connect the same wallet again to pick up where you left off.
+            </>
+          }
+        />
+      )}
+
+      {confirm === "delete" && (
+        <ConfirmDialog
+          title="Delete your page?"
+          confirmLabel="Delete page"
+          danger
+          onCancel={() => setConfirm(null)}
+          onConfirm={onDelete}
+          body={
+            <>
+              Your page, tiers and game settings are erased from this device.{" "}
+              <b>This can&apos;t be undone.</b>
+            </>
+          }
+        />
+      )}
     </div>
   );
 }

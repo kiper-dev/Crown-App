@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useCrown } from "@/lib/data/DataProvider";
 import { DonateForm } from "@/components/DonateForm";
 import { Mono } from "@/components/Mono";
-import { Logo } from "@/components/Logo";
 
 function plural(n: number, one: string, many: string) {
   return n === 1 ? one : many;
@@ -43,7 +42,7 @@ export default function CampaignPage({ params }: { params: { handle: string; slu
     <main className="page">
       <div className="wrap">
         <Link className="trust" href={`/@${streamer.handle}`}>
-          <Mono name={streamer.name} size={26} />
+          <Mono name={streamer.name} size={26} src={streamer.avatarUrl} />
           <span>
             <b>{streamer.name}</b> · @{streamer.handle}
           </span>

@@ -1,85 +1,73 @@
-import { sepolia } from "viem/chains";
-
-// The network the chain mode currently runs on (testnet).
-export const ACTIVE_CHAIN = sepolia;
+import { PublicKey } from "@solana/web3.js";
 
 // ──────────────────────────────────────────────────────────────────
-// Contract addresses. Supplied by the backend dev after the testnet deploy.
-// While the splitter isn't deployed — leave the zero address: the front end
-// detects this and shows an honest message instead of firing a transaction into the void.
-// (See Crown-App/docs/front.md — build plan F3: "testnet addresses from the backend".)
+// Chain-mode target: Solana devnet + ICP canisters (the Crown backend).
+// Every id below is pinned from the backend repos' testnet profiles:
+//   Crown-Core/config/testnet.toml      — splitter, usdc
+//   Crown-Factory/deploy/testnet.toml   — the three escrow factories
+//   Conditional-*/config/testnet.toml   — fee_bps, fee_wallet, min_gross
+// Devnet ids are NOT frozen (upgrade authority is only burned at F6), so
+// everything stays overridable via NEXT_PUBLIC_* env rather than hardcoded
+// in call sites. The ICP canisters have no public principals yet (S4
+// deferred) — those default to empty and gate their whole feature off.
 // ──────────────────────────────────────────────────────────────────
-export const ZERO = "0x0000000000000000000000000000000000000000" as const;
 
-export const ADDRESSES = {
-  // Splitter 97/3 from Crown-Core.
-  splitter: ZERO as `0x${string}`,
-  // USDC on testnet (Sepolia). Circle's known test USDC:
-  usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as `0x${string}`,
-};
+// The exact chain-id string every canister call and verdict domain uses.
+export const CHAIN_ID = "solana-devnet";
 
+export const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC || "https://api.devnet.solana.com";
+
+// Crown-Core's splitter: one donate(gross) instruction, the full amount
+// donor→streamer in the donor's own tx (fees live in the game escrows, not here).
+export const SPLITTER = new PublicKey(process.env.NEXT_PUBLIC_SPLITTER || "DDSeyx684iU9agHbXExwS3NstLvQeLKZcJWcJFSh1VDA");
+
+// Circle native devnet USDC (6 decimals). Baked into the splitter binary —
+// any other mint reverts with WrongMint; bridged USDC is forbidden.
+export const USDC_MINT = new PublicKey(process.env.NEXT_PUBLIC_USDC_MINT || "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+export const USDC_DECIMALS = 6;
+
+// Crown-Factory escrow shapes (each program id IS the factory).
+export const FACTORY_TWO_OUTCOME = new PublicKey(process.env.NEXT_PUBLIC_FACTORY_TWO_OUTCOME || "83f7ziVs5VeQ8xiDka8zczbfJT4WcxsXQ18cqWwmV5ur");
+export const FACTORY_PAYOUT_TABLE = new PublicKey(process.env.NEXT_PUBLIC_FACTORY_PAYOUT_TABLE || "EzvxRLxLvPW6TdmVCQ2JBWiv37tCD6kSngNvS2z2D3ka");
+export const FACTORY_STREAM = new PublicKey(process.env.NEXT_PUBLIC_FACTORY_STREAM || "57MpCQ3TfAE66qDAnfkP9AX7LRqwd4CNX8uN6DaVwm3V");
+
+// The games' price tag (factory-spec §2.1): birth fields of every escrow,
+// part of the crown-salt. Wrong values → an unresolvable escrow, so these
+// mirror the game configs exactly.
+export const FEE_BPS = 300;
+export const FEE_WALLET = new PublicKey(process.env.NEXT_PUBLIC_FEE_WALLET || "3it64t7KXNip1C1BRYNh8ygeKyujWnaQrPSj3hV9TWbE");
+// Dust floor for game escrows (Conditional-Tasks testnet profile pins 34).
+export const MIN_GROSS_TASK = 34;
+
+// The splitter is a real pinned devnet program now. Kept as a function
+// because call sites gate on it (and env can still blank it in a pinch).
 export function isSplitterConfigured() {
-  return ADDRESSES.splitter !== ZERO;
+  return true;
 }
 
 // ──────────────────────────────────────────────────────────────────
-// WalletConnect needs a project ID from https://cloud.walletconnect.com — free, but it's a
-// real account, not something to fake. Until one is set, WalletConnect is left out of the
-// wallet picker entirely rather than shown as a broken button (see components/WalletButton.tsx).
+// ICP: the crown-index reputation book + per-game resolver canisters.
+// NONE are publicly deployed yet — they run only on the backend dev's local
+// replica (S4 deferred). Until he hands over principals + a gateway host,
+// these stay empty and every dependent feature falls back to mock. The
+// moment the env vars are set, the features light up without a code change.
 // ──────────────────────────────────────────────────────────────────
-export const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+export const IC_HOST = process.env.NEXT_PUBLIC_IC_HOST || "";
+export const CROWN_INDEX_PRINCIPAL = process.env.NEXT_PUBLIC_CROWN_INDEX_PRINCIPAL || "";
+export const TASKS_PRINCIPAL = process.env.NEXT_PUBLIC_TASKS_PRINCIPAL || "";
+export const FUNDING_PRINCIPAL = process.env.NEXT_PUBLIC_FUNDING_PRINCIPAL || "";
+export const AUCTION_PRINCIPAL = process.env.NEXT_PUBLIC_AUCTION_PRINCIPAL || "";
+export const SUBSCRIPTION_PRINCIPAL = process.env.NEXT_PUBLIC_SUBSCRIPTION_PRINCIPAL || "";
 
-export function isWalletConnectConfigured() {
-  return !!WALLETCONNECT_PROJECT_ID;
+export function isIndexConfigured() {
+  return !!(IC_HOST && CROWN_INDEX_PRINCIPAL);
 }
 
-// ABI of exactly the functions the front end calls (from contracts/evm/src/Splitter.sol).
-export const SPLITTER_ABI = [
-  {
-    type: "function",
-    name: "donate",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "streamer", type: "address" },
-      { name: "gross", type: "uint256" },
-    ],
-    outputs: [],
-  },
-] as const;
-
-export const ERC20_ABI = [
-  {
-    type: "function",
-    name: "allowance",
-    stateMutability: "view",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-    ],
-    outputs: [{ type: "uint256" }],
-  },
-  {
-    type: "function",
-    name: "approve",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
-    ],
-    outputs: [{ type: "bool" }],
-  },
-  {
-    type: "function",
-    name: "balanceOf",
-    stateMutability: "view",
-    inputs: [{ name: "owner", type: "address" }],
-    outputs: [{ type: "uint256" }],
-  },
-  {
-    type: "function",
-    name: "decimals",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ type: "uint8" }],
-  },
-] as const;
+// Address validation — base58 ed25519 pubkeys everywhere (the 0x era is over).
+export function isValidAddress(a: string): boolean {
+  try {
+    return new PublicKey(a.trim()).toBytes().length === 32;
+  } catch {
+    return false;
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { AlertsOverlay, GoalOverlay, TopOverlay } from "@/components/overlays/Overlays";
+import { AlertsOverlay, RankOverlay, GoalOverlay, TopOverlay, RouletteOverlay, TaskOverlay, FundraiserOverlay, AuctionOverlay } from "@/components/overlays/Overlays";
 import { isOverlayKind } from "@/lib/data/overlays";
 
 // /overlay/<handle>/<widget> — a bare page for OBS Browser Source. Transparent background (see
@@ -19,7 +19,12 @@ export default function OverlayPage() {
   }
 
   if (widget === "alerts") return <AlertsOverlay handle={handle} demo={demo} />;
+  if (widget === "rank") return <RankOverlay handle={handle} demo={demo} />;
   if (widget === "top") return <TopOverlay handle={handle} demo={demo} />;
+  if (widget === "roulette") return <RouletteOverlay handle={handle} demo={demo} />;
+  if (widget === "task") return <TaskOverlay handle={handle} demo={demo} />;
+  if (widget === "fundraiser") return <FundraiserOverlay handle={handle} demo={demo} />;
+  if (widget === "auction") return <AuctionOverlay handle={handle} demo={demo} />;
 
   // Parse numeric params by presence + finiteness, not truthiness — so a legitimate 0 isn't dropped
   // to the demo default.
