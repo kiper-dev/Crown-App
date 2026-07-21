@@ -1,70 +1,72 @@
 # Crown App
 
-Фронтенд и централизованный слой Crown: сайт, личный кабинет, кампании, мини-игры, OBS-оверлеи.
+The Crown frontend and centralized layer: site, creator cabinet, campaigns, mini-games, OBS overlays.
 
-**Вне доверенного контура — ни денег, ни ключей.** Приложение только читает открытую книгу [Crown-Core](https://github.com/Crown-protocol/Crown-Core) и показывает её. Все расчёты идут ончейн, мимо этого кода.
+**Outside the trusted perimeter — no money, no keys.** This app only reads the open ledger of [Crown-Core](https://github.com/Crown-protocol/Crown-Core) and renders it. Settlement happens on-chain, past this code.
 
-## Что это
+## What this is
 
-Донаты автору без посредника между кошельком донора и получателем. Платёж уходит в неизменяемый сплиттер на Solana, факт доната попадает в книгу репутации на ICP, а Crown App показывает это зрителю и стримеру — профиль, цели, оверлей в OBS.
+Creator donations with no middleman between the donor's wallet and the recipient. The payment goes into an immutable splitter on Solana, the donation lands in a reputation ledger on ICP, and Crown App shows it to the viewer and the streamer — profile, goals, OBS overlay.
 
-## Стек
+## Stack
 
-| Слой | Технология |
+| Layer | Technology |
 |---|---|
-| Каркас | Next.js 14 (App Router), React 18, TypeScript |
+| Framework | Next.js 14 (App Router), React 18, TypeScript |
 | Solana | `@solana/web3.js`, `@solana/spl-token`, base58 |
 | ICP | `@dfinity/agent`, `@dfinity/candid` |
-| Данные | SQLite через `@libsql/client` |
-| Подписи | `tweetnacl` (ed25519) |
+| Storage | SQLite via `@libsql/client` |
+| Signatures | `tweetnacl` (ed25519) |
 
-## Запуск
+## Running
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
 ```
 
-Проверки:
+Checks:
 
 ```bash
-npm run verify:chain   # сеть и адреса
-npm run verify:db      # схема и инварианты БД
+npm run verify:chain   # network and addresses
+npm run verify:db      # database schema and invariants
 ```
 
-Телеграм-бот — отдельным процессом:
+The Telegram bot runs as a separate process:
 
 ```bash
-npm run bot            # читает bot/.env
+npm run bot            # reads bot/.env
 ```
 
-## Структура
+## Layout
 
 ```
 app/
-  [handle]/     публичный профиль автора
-  space/        кабинет: цели, кампании, конструктор страницы
-  games/        мини-игры
-  overlay/      OBS-оверлеи
-  discover/     каталог авторов
-  admin/        админка
+  [handle]/     public creator profile
+  space/        cabinet: goals, campaigns, page builder
+  games/        mini-games
+  overlay/      OBS overlays
+  discover/     creator directory
+  admin/        admin panel
   api/          donations, feed, reputation, profiles, telegram, indexer
-lib/server/     БД, индексер, авторизация, рейт-лимит
+lib/server/     database, indexer, auth, rate limiting
 scripts/        verify-chain, verify-db
 ```
 
-## База данных
+## Database
 
-SQLite, `data/crown.db`. Таблицу `donations` пишет **только индексер** — вручную туда не пишем, иначе разъедется с ончейном.
+SQLite at `data/crown.db`. The `donations` table is written **only by the indexer** — never by hand, or it will drift from the chain.
 
-## Проект
+## The project
 
-| Репозиторий | Роль |
+| Repository | Role |
 |---|---|
-| [Crown-Core](https://github.com/Crown-protocol/Crown-Core) | сплиттер (Solana) + книга репутации (ICP) |
-| [Crown-Factory](https://github.com/Crown-protocol/Crown-Factory) | two-outcome эскроу, атрибуция через PDA |
-| [Conditional-Tasks](https://github.com/Crown-protocol/Conditional-Tasks) | игра: условные задания |
-| [Conditional-Funding](https://github.com/Crown-protocol/Conditional-Funding) | игра: сбор средств |
-| **Crown-App** | фронтенд и централизованный слой |
+| [Crown-Core](https://github.com/Crown-protocol/Crown-Core) | splitter (Solana) + reputation ledger (ICP) |
+| [Crown-Factory](https://github.com/Crown-protocol/Crown-Factory) | two-outcome escrow, donor attribution via PDA |
+| [Conditional-Tasks](https://github.com/Crown-protocol/Conditional-Tasks) | game: conditional tasks |
+| [Conditional-Funding](https://github.com/Crown-protocol/Conditional-Funding) | game: crowdfunding |
+| [Auction](https://github.com/Crown-protocol/Auction) | game: auction |
+| [Subscription](https://github.com/Crown-protocol/Subscription) | game: prepaid streams |
+| **Crown-App** | frontend and centralized layer |
 
-Подробности фронта — [docs/front.md](docs/front.md). Читать вместе с документацией ядра и фабрики.
+Frontend details live in [docs/front.md](docs/front.md). Read it alongside the core and factory docs.
