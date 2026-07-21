@@ -41,7 +41,10 @@
     ".next-dev-verify/types/**/*.ts",
     ".next-audit/types/**/*.ts",
     ".next-nogreen/types/**/*.ts",
-    ".next-deploy/types/**/*.ts"
+    ".next-deploy/types/**/*.ts",
+    ".next-test/types/**/*.ts",
+    ".next-release/types/**/*.ts",
+    ".next-dev-qa/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

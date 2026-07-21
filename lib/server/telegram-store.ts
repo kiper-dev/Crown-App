@@ -337,8 +337,8 @@ export async function handleEvent(ev: BotEvent): Promise<BotResult> {
     if (ev.data?.startsWith("demo:")) {
       out.answerCallback.text =
         ev.data === "demo:accept"
-          ? "In the live version this accepts right from Telegram. Coming with the backend."
-          : "In the live version this declines and refunds the viewer. Coming with the backend.";
+          ? "A preview — in the live version this accepts the task right from Telegram."
+          : "A preview — in the live version this declines it and the viewer gets their money back.";
       if (ev.messageId) out.edits.push({ chatId, messageId: ev.messageId, keyboard: [] });
       return out;
     }

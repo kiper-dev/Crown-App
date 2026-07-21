@@ -15,3 +15,6 @@ npm-debug.log*
 
 # Crown DB (SQLite) — data lives on the server, never in git
 /data/
+
+# local debug scratch
+np.js
